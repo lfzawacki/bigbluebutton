@@ -14,6 +14,7 @@ brentjanderson:winston-client@0.2.0
 callback-hook@1.0.2
 cfs:http-methods@0.0.27
 check@1.0.4
+chhib:mongo-slow@1.0.0
 clinical:nightwatch@1.6.0
 coffeescript@1.0.5
 ddp@1.0.14

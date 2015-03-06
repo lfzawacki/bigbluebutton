@@ -67,15 +67,8 @@
 @removeAllShapesFromSlide = (meetingId, whiteboardId) ->
   Meteor.log.info "removeAllShapesFromSlide__" + whiteboardId
   if meetingId? and whiteboardId? and Meteor.Shapes.find({meetingId: meetingId, whiteboardId: whiteboardId})?
-    shapesOnSlide = Meteor.Shapes.find({meetingId: meetingId, whiteboardId: whiteboardId}).fetch()
-    Meteor.log.info "number of shapes:" + shapesOnSlide.length
-    for s in shapesOnSlide
-      Meteor.log.info "shape=" + s.shape.id
-      id = Meteor.Shapes.findOne({meetingId: meetingId, whiteboardId: whiteboardId, "shape.id": s.shape.id})
-      if id?
-        Meteor.Shapes.remove(id._id)
-        Meteor.log.info "----removed shape[" + s.shape.id + "] from " + whiteboardId
-        Meteor.log.info "remaining shapes on the slide:" + Meteor.Shapes.find({meetingId: meetingId, whiteboardId: whiteboardId}).fetch().length
+    shapesOnSlide = Meteor.Shapes.slowRemove({meetingId: meetingId, whiteboardId: whiteboardId}, 10, 1000)
+    Meteor.log.info "clearing all shapes from slide"
 
 @removeShapeFromSlide = (meetingId, whiteboardId, shapeId) ->
   shapeToRemove = Meteor.Shapes.findOne({meetingId: meetingId, whiteboardId: whiteboardId, "shape.id": shapeId})
@@ -88,7 +81,8 @@
 # called on server start and meeting end
 @clearShapesCollection = (meetingId) ->
   if meetingId?
-    Meteor.Shapes.remove({meetingId: meetingId}, Meteor.log.info "cleared Shapes Collection (meetingId: #{meetingId}!")
+    Meteor.Shapes.slowRemove({meetingId: meetingId}, 10, 1000)
+    Meteor.log.info "cleared Shapes Collection (meetingId: #{meetingId}!"
   else
     Meteor.Shapes.remove({}, Meteor.log.info "cleared Shapes Collection (all meetings)!")
 
