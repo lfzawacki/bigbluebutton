@@ -182,6 +182,7 @@ https://github.com/bigbluebutton/bigbluebutton/blob/master/bigbluebutton-client/
   callback - function that gets executed for the response.
   ###
   BBB.getMeetingID = (callback) ->
+    returnOrCallback getInSession("meetingId"), callback
 
   BBB.getInternalMeetingID = (callback) ->
 
