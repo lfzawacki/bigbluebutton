@@ -310,6 +310,7 @@ function make_call(username, voiceBridge, server, callback, recall, isListenOnly
 		}
 
 		options = {
+			audioRecvOnly: true,
 			media: {
 				stream: stream, // use the stream created above
 				render: {
@@ -340,7 +341,7 @@ function make_call(username, voiceBridge, server, callback, recall, isListenOnly
 			}
 		};
 	}
-	
+
 	callTimeout = setTimeout(function() {
 		console.log('Ten seconds without updates sending timeout code');
 		callback({'status':'failed', 'errorcode': 1006}); // Failure on call
@@ -351,14 +352,14 @@ function make_call(username, voiceBridge, server, callback, recall, isListenOnly
 			userAgentTemp.stop();
 		}
 	}, 10000);
-	
+
 	callActive = false;
 	callICEConnected = false;
 	callPurposefullyEnded = false;
 	callFailCounter = 0;
 	console.log("Calling to " + voiceBridge + "....");
-	currentSession = userAgent.invite('sip:' + voiceBridge + '@' + server, options); 
-	
+	currentSession = userAgent.invite('sip:' + voiceBridge + '@' + server, options);
+
 	// Only send the callback if it's the first try
 	if (recall === false) {
 		console.log('call connecting');

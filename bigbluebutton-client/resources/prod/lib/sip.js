@@ -2475,6 +2475,9 @@ var Hacks = module.exports = {
        *
        **/
       return sdp.replace(/ RTP\/SAVP/gmi, " UDP/TLS/RTP/SAVP");
+    },
+    audioRecvOnlyHack: function(sdp) {
+      return sdp.replace(/sendrecv/gmi, "recvonly");
     }
   },
   Firefox: {
@@ -5919,6 +5922,10 @@ InviteClientContext = function(ua, target, options) {
   this.RTCConstraints = options.RTCConstraints || {};
   this.inviteWithoutSdp = options.inviteWithoutSdp || false;
 
+  // Only used to fake a one way stream to freeswitch and not
+  // have to ask for user media permission
+  this.audioRecvOnly = options.audioRecvOnly || false;
+
   // Set anonymous property
   this.anonymous = options.anonymous || false;
 
@@ -6047,6 +6054,10 @@ InviteClientContext.prototype = {
           }
 
           offer = SIP.Hacks.Firefox.hackCLinInIP(offer);
+
+          if (self.audioRecvOnly) {
+            offer = SIP.Hacks.AllBrowsers.audioRecvOnlyHack(offer);
+          }
 
           self.hasOffer = true;
           self.request.body = offer;
@@ -8277,6 +8288,7 @@ UA.prototype.afterConnected = function afterConnected (callback) {
  */
 UA.prototype.invite = function(target, options) {
   options = options || {};
+
   SIP.Utils.optionsOverride(options, 'media', 'mediaConstraints', true, this.logger);
 
   var context = new SIP.InviteClientContext(this, target, options);
