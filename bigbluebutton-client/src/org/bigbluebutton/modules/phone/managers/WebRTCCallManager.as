@@ -31,18 +31,18 @@ package org.bigbluebutton.modules.phone.managers
 
   public class WebRTCCallManager
   {
-	private static const LOGGER:ILogger = getClassLogger(WebRTCCallManager);      
-    
+    private static const LOGGER:ILogger = getClassLogger(WebRTCCallManager);
+
     private var browserType:String = "unknown";
     private var browserVersion:int = 0;
     private var dispatcher:Dispatcher = new Dispatcher();
     private var echoTestDone:Boolean = false;
-    
+
     private var usingWebRTC:Boolean = false;
     private var options:PhoneOptions;
-    
+
     private var model:WebRTCModel = PhoneModel.getInstance().webRTCModel;
-    
+
     public function WebRTCCallManager() {
       var browserInfo:Array = JSAPI.getInstance().getBrowserInfo();
       if (browserInfo != null) {
@@ -50,17 +50,17 @@ package org.bigbluebutton.modules.phone.managers
         browserVersion = browserInfo[1];
       }
       options = new PhoneOptions();
-      
+
       // only show the warning if the admin has enabled WebRTC
       if (options.useWebRTCIfAvailable && !isWebRTCSupported()) {
-        dispatcher.dispatchEvent(new ClientStatusEvent(ClientStatusEvent.WARNING_MESSAGE_EVENT, 
-          ResourceUtil.getInstance().getString("bbb.clientstatus.webrtc.title"), 
+        dispatcher.dispatchEvent(new ClientStatusEvent(ClientStatusEvent.WARNING_MESSAGE_EVENT,
+          ResourceUtil.getInstance().getString("bbb.clientstatus.webrtc.title"),
           ResourceUtil.getInstance().getString("bbb.clientstatus.webrtc.message")));
       }
-      
+
       usingWebRTC = checkIfToUseWebRTC();
     }
-    
+
     private function isWebRTCSupported():Boolean {
       LOGGER.debug("isWebRTCSupported - ExternalInterface.available=[{0}], isWebRTCAvailable=[{1}]", [ExternalInterface.available, ExternalInterface.call("isWebRTCAvailable")]);
       return (ExternalInterface.available && ExternalInterface.call("isWebRTCAvailable"));
@@ -69,12 +69,10 @@ package org.bigbluebutton.modules.phone.managers
     public function userRequestedHangup():void {
       if (usingWebRTC) hangup();
     }
-    
-    public function initialize():void {         
 
+    public function initialize():void {
     }
-    
-    
+
     private function checkIfToUseWebRTC():Boolean {
       var webRTCSupported:Boolean = isWebRTCSupported();
       
@@ -101,62 +99,69 @@ package org.bigbluebutton.modules.phone.managers
     private function hangup():void {
       ExternalInterface.call("stopWebRTCAudioTest");
     }
-    
+
     public function handleWebRTCEchoTestStartedEvent():void {
       model.state = Constants.DO_ECHO_TEST;
       dispatcher.dispatchEvent(new WebRTCEchoTestStartedEvent());
     }
     
     public function handleWebRTCEchoTestNoAudioEvent():void {
-	  LOGGER.debug("handleWebRTCEchoTestNoAudioEvent");
+      LOGGER.debug("handleWebRTCEchoTestNoAudioEvent");
       model.state = Constants.ECHO_TEST_FAILED;
       endEchoTest();
-      
+
       dispatcher.dispatchEvent(new UseFlashModeCommand());
     }
-    
-    private var t:Timer;
-    
+
     public function handleWebRTCEchoTestHasAudioEvent():void {
       LOGGER.debug("handleWebRTCEchoTestHasAudioEvent");
       model.state = Constants.STOP_ECHO_THEN_JOIN_CONF;
       endEchoTestJoinConference();
     }
-    
+
     public function handleWebRTCCallStartedEvent():void {
-	  LOGGER.debug("setting state to IN_CONFERENCE");
+      LOGGER.debug("setting state to IN_CONFERENCE");
       model.state = Constants.IN_CONFERENCE;
       dispatcher.dispatchEvent(new WebRTCJoinedVoiceConferenceEvent());
-      
     }
-    
+
     public function handleWebRTCCallEndedEvent():void {
       model.state = Constants.INITED;
     }
-    
-    private function joinVoiceConference():void {
-      model.state = Constants.JOIN_VOICE_CONFERENCE;
-      ExternalInterface.call("joinWebRTCVoiceConference");      
+
+    private function joinVoiceConference(listenOnly:Boolean):void {
+      if (listenOnly) {
+        model.state = Constants.CALL_TO_LISTEN_ONLY_STREAM;
+      }
+      else {
+        model.state = Constants.JOIN_VOICE_CONFERENCE;
+      }
+
+      LOGGER.debug("Setting state to " + model.state + " and listenOnly is " + listenOnly);
+      ExternalInterface.call("joinWebRTCVoiceConference", listenOnly);
     }
-    
+
     public function handleJoinVoiceConferenceCommand(event:JoinVoiceConferenceCommand):void {
-	  LOGGER.debug("handleJoinVoiceConferenceCommand - usingWebRTC: " + usingWebRTC + ", event.mic: " + event.mic);
-      
-      if (!usingWebRTC || !event.mic) return;
-      
-      if (options.skipCheck || echoTestDone) {
-        joinVoiceConference();
+      LOGGER.debug("handleJoinVoiceConferenceCommand - usingWebRTC: " + usingWebRTC + ", event.mic: " + event.mic);
+
+      if (!usingWebRTC) return;
+
+      if (!event.mic) { // If no mic is present, join listenOnly
+        options.skipCheck = true;
+        joinVoiceConference(true);
+      } else if (options.skipCheck || echoTestDone) {
+        joinVoiceConference(false);
       } else {
         startWebRTCEchoTest();
       }
     }
-    
+
     public function handleLeaveVoiceConferenceCommand():void {
       if (!usingWebRTC) return;
       model.state = Constants.INITED;
       ExternalInterface.call("leaveWebRTCVoiceConference");
     }
-    
+
 	  public function handleBecomeViewer():void {
 		  LOGGER.debug("handleBecomeViewer received");
 		  if (options.presenterShareOnly) {
