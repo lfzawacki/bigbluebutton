@@ -77,10 +77,10 @@ function callIntoConference(voiceBridge, callback, isListenOnly) {
 	}
 }
 
-function joinWebRTCVoiceConference() {
-	console.log("Joining to the voice conference directly");
-	inEchoTest = false;
-	callIntoConference(conferenceVoiceBridge, webRTCCallback);
+function joinWebRTCVoiceConference(listenOnly) {
+    console.log("Joining to the voice conference directly. Is it a listen only call? " + listenOnly);
+    inEchoTest = false;
+    callIntoConference(conferenceVoiceBridge, webRTCCallback, listenOnly);
 }
 
 function leaveWebRTCVoiceConference() {
