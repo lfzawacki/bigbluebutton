@@ -481,6 +481,18 @@ public class Client
                                         return;
                                     } else if (eventFunc.equals("conference_add_member")) {
                                     	System.out.println("##### Client conference_add_member");
+
+                                        // include the SDP in the add member event
+                                        InboundClientHandler handler = (InboundClientHandler)channel.getPipeline().getLast();
+                                        EslMessage response = sendSyncApiCommand( "uuid_getvar", uniqueId + " switch_r_sdp" );
+                                        StringBuilder sb = new StringBuilder();
+                                        for (String s : response.getBodyLines())
+                                        {
+                                            sb.append(s);
+                                            sb.append("\n");
+                                        }
+                                        eventHeaders.put("variable_switch_r_sdp", sb.toString());
+
                                         listener.conferenceEventJoin(uniqueId, confName, confSize, event);
                                         return;
                                     } else if (eventFunc.equals("conference_del_member")) {

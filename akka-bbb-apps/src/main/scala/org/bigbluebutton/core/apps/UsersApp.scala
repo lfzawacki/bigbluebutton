@@ -444,7 +444,11 @@ trait UsersApp {
         log.info("User joined from phone.  meetingId=" + mProps.meetingID + " userId=" + uvo.userID + " user=" + uvo)
 
         outGW.send(new UserJoined(mProps.meetingID, mProps.recorded, uvo))
-        outGW.send(new UserJoinedVoice(mProps.meetingID, mProps.recorded, mProps.voiceBridge, uvo))
+        if (uvo.listenOnly) {
+          outGW.send(new UserListeningOnly(mProps.meetingID, mProps.recorded, uvo.userID, uvo.listenOnly))
+        } else {
+          outGW.send(new UserJoinedVoice(mProps.meetingID, mProps.recorded, mProps.voiceBridge, uvo))
+        }
 
         if (meetingModel.isMeetingMuted()) {
           outGW.send(new MuteVoiceUser(mProps.meetingID, mProps.recorded, uvo.userID, uvo.userID,
@@ -468,18 +472,22 @@ trait UsersApp {
     usersModel.getUser(msg.userId) match {
       case Some(user) => {
         val vu = new VoiceUser(msg.voiceUserId, msg.userId, msg.callerIdName,
-          msg.callerIdNum, joined = true, locked = false,
+          msg.callerIdNum, joined = !msg.listenOnly, locked = false,
           msg.muted, msg.talking, msg.listenOnly)
         val nu = user.copy(voiceUser = vu, listenOnly = msg.listenOnly)
         usersModel.addUser(nu)
 
         log.info("User joined voice. meetingId=" + mProps.meetingID + " userId=" + user.userID + " user=" + nu)
-        outGW.send(new UserJoinedVoice(mProps.meetingID, mProps.recorded, mProps.voiceBridge, nu))
+        if (nu.listenOnly) {
+          outGW.send(new UserListeningOnly(mProps.meetingID, mProps.recorded, nu.userID, nu.listenOnly))
+        } else {
+          outGW.send(new UserJoinedVoice(mProps.meetingID, mProps.recorded, mProps.voiceBridge, nu))
 
-        if (meetingModel.isMeetingMuted()) {
-          outGW.send(new MuteVoiceUser(mProps.meetingID, mProps.recorded,
-            nu.userID, nu.userID, mProps.voiceBridge,
-            nu.voiceUser.userId, meetingModel.isMeetingMuted()))
+          if (meetingModel.isMeetingMuted()) {
+            outGW.send(new MuteVoiceUser(mProps.meetingID, mProps.recorded,
+              nu.userID, nu.userID, mProps.voiceBridge,
+              nu.voiceUser.userId, meetingModel.isMeetingMuted()))
+          }
         }
 
         startRecordingVoiceConference()
@@ -504,6 +512,10 @@ trait UsersApp {
       + " userId=" + msg.voiceUserId)
 
     usersModel.getUserWithVoiceUserId(msg.voiceUserId) foreach { user =>
+      if (user.listenOnly) {
+        outGW.send(new UserListeningOnly(mProps.meetingID, mProps.recorded, user.userID, false))
+      }
+
       /**
        * Reset user's voice status.
        */
