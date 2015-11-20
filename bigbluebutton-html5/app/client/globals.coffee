@@ -415,7 +415,7 @@ Handlebars.registerHelper "getPollQuestions", ->
 
 # close the daudio UI, then join the conference. If listen only send the request to the server
 @joinVoiceCall = (event, {isListenOnly} = {}) ->
-  if !isWebRTCAvailable()
+  if !BBBWebRTC.available()
     notification_WebRTCNotSupported()
     return
 

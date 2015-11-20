@@ -94,7 +94,7 @@
     }
     
     private function isWebRTCSupported():Boolean {
-      return (ExternalInterface.available && ExternalInterface.call("isWebRTCAvailable"));
+      return (ExternalInterface.available && ExternalInterface.call("BBBWebRTC.available"));
     }
 
     private function isConnected():Boolean {

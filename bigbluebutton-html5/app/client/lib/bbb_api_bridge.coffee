@@ -13,7 +13,7 @@ https://github.com/bigbluebutton/bigbluebutton/blob/master/bigbluebutton-client/
 https://github.com/bigbluebutton/bigbluebutton/blob/master/bigbluebutton-client/resources/prod/3rd-party.html
 ###
 
-@BBB = (->
+(->
 
   BBB = {}
 
@@ -263,21 +263,20 @@ https://github.com/bigbluebutton/bigbluebutton/blob/master/bigbluebutton-client/
   isListenOnly: signifies whether the user joining the conference audio requests to join the listen only stream
   ###
   BBB.joinVoiceConference = (callback, isListenOnly) ->
-    if BBB.isMyMicLocked()
-      callIntoConference(BBB.getMyVoiceBridge(), callback, true) #true because we force isListenOnly mode
-    callIntoConference(BBB.getMyVoiceBridge(), callback, isListenOnly)
+    # first param is 'listenOnly' so we force it to true if mic is locked
+    BBBWebRTC.joinVoiceConference(BBB.isMyMicLocked() || isListenOnly, callback)
 
   ###
   Leave the voice conference.
   ###
   BBB.leaveVoiceConference = (callback) ->
-    webrtc_hangup callback # sign out of call
+    BBBWebRTC.leaveVoiceConference() # webrtc_hangup callback # sign out of call
 
   ###
   Get a hold of the object containing the call information
   ###
   BBB.getCallStatus = ->
-    getCallStatus()
+    BBBWebRTC.getCallStatus()
 
   ###
   Share user's webcam.
@@ -429,6 +428,7 @@ https://github.com/bigbluebutton/bigbluebutton/blob/master/bigbluebutton-client/
       getInSession('userId'),
       getInSession('authToken'))
 
+  # Compatibility/callback functions present in BBB api-bridge
   BBB.webRTCConferenceCallStarted = ->
 
   BBB.webRTCConferenceCallConnecting = ->
@@ -438,6 +438,21 @@ https://github.com/bigbluebutton/bigbluebutton/blob/master/bigbluebutton-client/
   BBB.webRTCConferenceCallFailed = (errorcode) ->
 
   BBB.webRTCConferenceCallWaitingForICE = ->
+
+  # Compatibility/callback functions from BBB js API
+  BBB.webRTCCallEnded = -> (inEchoTest)
+
+  BBB.webRTCCallStarted = -> (inEchoTest)
+
+  BBB.webRTCCallConnecting = -> (inEchoTest)
+
+  BBB.webRTCCallWaitingForICE = -> (inEchoTest)
+
+  BBB.webRTCCallTransferring = -> (inEchoTest)
+
+  BBB.webRTCCallFailed = ->
+
+  BBB.webRTCCallConnecting = ->
 
   BBB.webRTCCallProgressCallback = (progress) ->
 
@@ -486,5 +501,5 @@ https://github.com/bigbluebutton/bigbluebutton/blob/master/bigbluebutton-client/
 
   BBB.init = (callback) ->
 
-  BBB
+  window.BBB = BBB
 )()

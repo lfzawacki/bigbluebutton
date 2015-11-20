@@ -62,8 +62,8 @@ package org.bigbluebutton.modules.phone.managers
     }
 
     private function isWebRTCSupported():Boolean {
-      LOGGER.debug("isWebRTCSupported - ExternalInterface.available=[{0}], isWebRTCAvailable=[{1}]", [ExternalInterface.available, ExternalInterface.call("isWebRTCAvailable")]);
-      return (ExternalInterface.available && ExternalInterface.call("isWebRTCAvailable"));
+      LOGGER.debug("isWebRTCSupported - ExternalInterface.available=[{0}], isWebRTCAvailable=[{1}]", [ExternalInterface.available, ExternalInterface.call("BBBWebRTC.available")]);
+      return (ExternalInterface.available && ExternalInterface.call("BBBWebRTC.available"));
     }
     
     public function userRequestedHangup():void {
@@ -75,29 +75,29 @@ package org.bigbluebutton.modules.phone.managers
 
     private function checkIfToUseWebRTC():Boolean {
       var webRTCSupported:Boolean = isWebRTCSupported();
-      
-	  LOGGER.debug("checkIfToUseWebRTC - useWebRTCIfAvailable=[{0}], isWebRTCSupported=[{1}]", [options.useWebRTCIfAvailable, webRTCSupported]);
+
+      LOGGER.debug("checkIfToUseWebRTC - useWebRTCIfAvailable=[{0}], isWebRTCSupported=[{1}]", [options.useWebRTCIfAvailable, webRTCSupported]);
       if (options.useWebRTCIfAvailable && webRTCSupported) {
         return true;
-      }      
+      }
       return false;
     }
     
     private function startWebRTCEchoTest():void {
       model.state = Constants.CALLING_INTO_ECHO_TEST;
-      ExternalInterface.call("startWebRTCAudioTest");
+      ExternalInterface.call("BBBWebRTC.startEchoTest");
     }
     
     private function endEchoTest():void {
-      ExternalInterface.call("stopWebRTCAudioTest");
+      ExternalInterface.call("BBBWebRTC.stopEchoTest");
     }
     
     private function endEchoTestJoinConference():void {
-      ExternalInterface.call("stopWebRTCAudioTestJoinConference");
+      ExternalInterface.call("BBBWebRTC.stopEchoTestJoinConference");
     }
     
     private function hangup():void {
-      ExternalInterface.call("stopWebRTCAudioTest");
+      ExternalInterface.call("BBBWebRTC.stopEchoTest");
     }
 
     public function handleWebRTCEchoTestStartedEvent():void {
@@ -138,7 +138,7 @@ package org.bigbluebutton.modules.phone.managers
       }
 
       LOGGER.debug("Setting state to " + model.state + " and listenOnly is " + listenOnly);
-      ExternalInterface.call("joinWebRTCVoiceConference", listenOnly);
+      ExternalInterface.call("BBBWebRTC.joinVoiceConference", listenOnly);
     }
 
     public function handleJoinVoiceConferenceCommand(event:JoinVoiceConferenceCommand):void {
@@ -159,7 +159,7 @@ package org.bigbluebutton.modules.phone.managers
     public function handleLeaveVoiceConferenceCommand():void {
       if (!usingWebRTC) return;
       model.state = Constants.INITED;
-      ExternalInterface.call("leaveWebRTCVoiceConference");
+      ExternalInterface.call("BBBWebRTC.leaveVoiceConference");
     }
 
 	  public function handleBecomeViewer():void {
@@ -168,14 +168,14 @@ package org.bigbluebutton.modules.phone.managers
 			  if (!usingWebRTC || model.state != Constants.IN_CONFERENCE || UsersUtil.amIModerator()) return;
 			
 			  LOGGER.debug("handleBecomeViewer leaving WebRTC and joining listen only stream");
-			  ExternalInterface.call("leaveWebRTCVoiceConference");
+			  ExternalInterface.call("BBBWebRTC.leaveVoiceConference");
 			
 			  var command:JoinVoiceConferenceCommand = new JoinVoiceConferenceCommand();
 			  command.mic = false;
 			  dispatcher.dispatchEvent(command);
 		  }
 	  }
-	
+
     public function handleUseFlashModeCommand():void {
       usingWebRTC = false;
     }
