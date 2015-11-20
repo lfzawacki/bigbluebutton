@@ -98,8 +98,9 @@ public class GetAllUsersCommand extends FreeswitchCommand {
         			callerIdName = matcher.group(2).trim();
         		} 
         		
+                // TODO set properly the recvOnly flag
                 pj = new VoiceUserJoinedEvent(voiceUserId, member.getId().toString(), confXML.getConferenceRoom(),
-                		callerId, callerIdName, member.getMuted(), member.getSpeaking());
+                		callerId, callerIdName, member.getMuted(), member.getSpeaking(), false);
                 eventListener.handleConferenceEvent(pj);
             }
 

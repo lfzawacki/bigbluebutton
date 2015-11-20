@@ -50,17 +50,17 @@ public class ESLEventListener implements IEslEventListener {
     
     @Override
     public void conferenceEventJoin(String uniqueId, String confName, int confSize, EslEvent event) {
-    	
         Integer memberId = this.getMemberIdFromEvent(event);
         Map<String, String> headers = event.getEventHeaders();
         String callerId = this.getCallerIdFromEvent(event);
         String callerIdName = this.getCallerIdNameFromEvent(event);
         boolean muted = headers.get("Speak").equals("true") ? false : true; //Was inverted which was causing a State issue
         boolean speaking = headers.get("Talking").equals("true") ? true : false;
+        Boolean recvOnly = getSdpFromEvent(event).contains("a=recvonly");
 
         String voiceUserId = callerIdName;
         
-        System.out.println("User joined voice conference, user=[" + callerIdName + "], conf=[" + confName + "]");
+        System.out.println("User joined voice conference, user=[" + callerIdName + "], conf=[" + confName + "], recvOnly=[" + recvOnly + "]");
         
         Matcher gapMatcher = GLOBAL_AUDION_PATTERN.matcher(callerIdName);
         if (gapMatcher.matches()) {
@@ -74,7 +74,7 @@ public class ESLEventListener implements IEslEventListener {
 			    callerIdName = matcher.group(2).trim();
 		    } 
         
-        VoiceUserJoinedEvent pj = new VoiceUserJoinedEvent(voiceUserId, memberId.toString(), confName, callerId, callerIdName, muted, speaking);
+        VoiceUserJoinedEvent pj = new VoiceUserJoinedEvent(voiceUserId, memberId.toString(), confName, callerId, callerIdName, muted, speaking, recvOnly);
         conferenceEventListener.handleConferenceEvent(pj);
     }
 
@@ -182,6 +182,10 @@ public class ESLEventListener implements IEslEventListener {
 
     private Integer getMemberIdFromEvent(EslEvent e) {
         return new Integer(e.getEventHeaders().get("Member-ID"));
+    }
+
+    private String getSdpFromEvent(EslEvent e) {
+        return e.getEventHeaders().get("variable_switch_r_sdp");
     }
 
     private String getCallerIdFromEvent(EslEvent e) {
