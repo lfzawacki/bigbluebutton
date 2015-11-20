@@ -190,69 +190,62 @@ package org.bigbluebutton.modules.phone.managers
       } else {
         errorString = ResourceUtil.getInstance().getString("bbb.webrtcWarning.failedError." + event.errorCode);
       }
-      
+
       if (!errorString) {
         errorString = ResourceUtil.getInstance().getString("bbb.webrtcWarning.failedError.unknown", [event.errorCode]);
       }
-      
-	  var logData:Object = new Object();       
-	  logData.user = UsersUtil.getUserData();
-	  logData.user.reason = errorString;
-	  JSLog.warn("WebRtc Echo test failed.", logData);
-	  
-	  LOGGER.info(jsonXify(logData));
-	  
+
+      logWebRTCError("WebRtc Echo test failed.\n" + errorString);
+
       sendWebRTCAlert(ResourceUtil.getInstance().getString("bbb.webrtcWarning.title"), ResourceUtil.getInstance().getString("bbb.webrtcWarning.message", [errorString]), errorString);
     }
-    
+
     public function handleWebRTCEchoTestEndedUnexpectedly():void {
       model.state = Constants.INITED;
       var errorString:String = ResourceUtil.getInstance().getString("bbb.webrtcWarning.failedError.endedunexpectedly");
-	  
-	  var logData:Object = new Object();       
-	  logData.user = UsersUtil.getUserData();
-	  logData.user.reason = errorString;
-	  LOGGER.info(jsonXify(logData));
-	  
+
+      logWebRTCError(errorString);
+
       sendWebRTCAlert(ResourceUtil.getInstance().getString("bbb.webrtcWarning.title"), ResourceUtil.getInstance().getString("bbb.webrtcWarning.message", [errorString]), errorString);
     }
-    
+
     public function handleWebRTCCallFailedEvent(event:WebRTCCallEvent):void {
       var errorString:String;
       model.state = Constants.INITED;
-      
+
       if (event.errorCode == 1004) {
         errorString = ResourceUtil.getInstance().getString("bbb.webrtcWarning.failedError." + event.errorCode, [event.cause]);
       } else {
         errorString = ResourceUtil.getInstance().getString("bbb.webrtcWarning.failedError." + event.errorCode);
       }
-      
+
       if (!errorString) {
         errorString = ResourceUtil.getInstance().getString("bbb.webrtcWarning.failedError.unknown", [event.errorCode]);
       }
-	  
-	  var logData:Object = new Object();       
-	  logData.user = UsersUtil.getUserData();
-	  logData.user.reason = errorString;
-	  LOGGER.info(jsonXify(logData));
-	  
+
+      logWebRTCError(errorString);
+
       sendWebRTCAlert(ResourceUtil.getInstance().getString("bbb.webrtcWarning.title"), ResourceUtil.getInstance().getString("bbb.webrtcWarning.message", [errorString]), errorString);
     }
-    
+
     public function handleWebRTCMediaFailedEvent():void {
       model.state = Constants.INITED;
       var errorString:String = ResourceUtil.getInstance().getString("bbb.webrtcWarning.failedError.mediamissing");
-	  
-	  var logData:Object = new Object();       
-	  logData.user = UsersUtil.getUserData();
-	  logData.user.reason = errorString;
-	  LOGGER.info(jsonXify(logData));
-	  
+
+      logWebRTCError(errorString);
+
       sendWebRTCAlert(ResourceUtil.getInstance().getString("bbb.webrtcWarning.title"), ResourceUtil.getInstance().getString("bbb.webrtcWarning.message", [errorString]), errorString);
     }
-    
+
+    private function logWebRTCError(errorString:String):void {
+      var logData:Object = new Object();
+      logData.user = UsersUtil.getUserData();
+      logData.user.reason = errorString;
+      LOGGER.info(jsonXify(logData));
+    }
+
     private var popUpDelayTimer:Timer = new Timer(100, 1);
-    
+
     private function handleCallFailedUserResponse(e:CloseEvent):void {
       if (e.detail == Alert.YES){
         /**

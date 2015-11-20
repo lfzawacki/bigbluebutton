@@ -19,7 +19,7 @@
 
     var newCallback = function(message) {
       webRTCCallback(message);
-      // typeof callback === 'function' && callback(message);
+      typeof callback === 'function' && callback(message);
     };
 
     callIntoConference(conferenceVoiceBridge, webRTCCallback, listenOnly);
