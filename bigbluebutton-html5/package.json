@@ -23,7 +23,8 @@
     "load-grunt-tasks": "~3.4.1",
     "grunt-force-task": "~2.0.0",
     "grunt-contrib-watch": "~1.0.0",
-    "grunt-concurrent": "~2.2.1"
+    "grunt-concurrent": "~2.2.1",
+    "react-a11y": "0.1.0"
   },
   "cssModules": {
     "extensions": ["scss"]
