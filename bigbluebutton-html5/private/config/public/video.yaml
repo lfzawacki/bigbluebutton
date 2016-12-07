@@ -1,0 +1,3 @@
+video:
+  mediaServerAddress: '127.0.0.1'
+  mediaServerPort: '8888'
