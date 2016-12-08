@@ -7,6 +7,8 @@ import KickedScreen from '../kicked-screen/component';
 
 import NotificationsBarContainer from '../notifications-bar/container';
 
+import VideoDock from '../video-dock/container';
+
 import Button from '../button/component';
 import styles from './styles';
 import cx from 'classnames';
