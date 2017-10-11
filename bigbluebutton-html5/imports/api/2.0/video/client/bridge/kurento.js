@@ -18,29 +18,23 @@ const getUsername = () => {
 
 export default class KurentoVideo {
   kurentoWatchVideo() {
-    window.kurentoWatchVideo(
-      'video',
-      BridgeService.getConferenceBridge(),
-      getUsername(),
-      getMeetingId(),
-      null,
-      null,
-    );
   }
 
-  kurentoExitVideo() {
-    window.kurentoExitVideo();
+  on(event) {
   }
 
-  // TODO parameters? que elementos?
-  kurentoShareVideo() {
-    window.kurentoShareVideo(
-      null,
-      BridgeService.getConferenceBridge(),
-      getUsername(), 
-      getMeetingId(),
-      null,
-      null,
+  stop(id) {
+    window.KurentoVideo.stop(id);
+  }
+
+  start(id, share, tag, cb) {
+    window.KurentoVideo.start(
+      id, share, tag, cb
+      // BridgeService.getConferenceBridge(),
+      // getUsername(), 
+      // getMeetingId(),
+      // null,
+      // null,
     );
   }
 }

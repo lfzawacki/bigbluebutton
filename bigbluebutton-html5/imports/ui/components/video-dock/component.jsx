@@ -1,20 +1,21 @@
 import React, { Component } from 'react';
 import ScreenshareContainer from '/imports/ui/components/screenshare/container';
 import styles from './styles.scss';
+//import KurentoVideo from '/imports/api/2.0/video/client/bridge/kurento';
+
+const KurentoVideo = window.KurentoVideo;
 
 class VideoElement extends Component {
   constructor(props) {
-    this.state = {};
-
     super(props);
+    this.state = {};
   }
 
   render() {
-    return <video id={props.id} width={props.width} height:{props.height}>;
+    return <video id={props.id} width={props.width} height={props.height}/>;
   }
 
 }
-
 
 export default class VideoDock extends Component {
 
@@ -31,9 +32,9 @@ export default class VideoDock extends Component {
     this.unshareWebcam = this.unshareWebcam.bind(this);
     this.shareWebcam = this.shareWebcam.bind(this);
 
-    KurentoVideo.on('playStart', this.handlePlayStart);
-    KurentoVideo.on('playStop', this.handlePlayStop);
-    KurentoVideo.on('error', this.handleError);
+   // KurentoVideo.on('playStart', this.handlePlayStart);
+   // KurentoVideo.on('playStop', this.handlePlayStop);
+   // KurentoVideo.on('error', this.handleError);
   }
 
   componentDidMount() {
@@ -68,7 +69,7 @@ export default class VideoDock extends Component {
 
       let videos = this.state.videos;
       delete videos[id];
-      this.setState(videos: videos);
+      this.setState({videos: videos});
 
       adjustVideos('#webcamArea', true);
     });
@@ -114,9 +115,9 @@ export default class VideoDock extends Component {
         <video id="shareWebcamVideo" className={styles.sharedWebcamVideo} ref="videoInput" />
 
         {
-          videos.map((video, id) => {
-            return <VideoElement id={id}>
-          });
+          Object.keys(this.state.videos).map((id) => {
+            return this.state.videos[id];
+          })
         }
 
       </div>
