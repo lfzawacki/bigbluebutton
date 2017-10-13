@@ -35,7 +35,6 @@ Kurento = function (
   this.caller_id_number = conferenceUsername;
   this.pingInterval;
 
-  this.kurentoPort = "kurento-screenshare";
   this.hostName = window.location.hostname;
   this.socketUrl = 'wss://' + this.hostName + '/' + this.kurentoPort;
 
@@ -53,7 +52,56 @@ Kurento = function (
       _this.logError('Default error handler');
     };
   }
+
+  Kurento.init();
 };
+
+var ws = null;
+
+Kurento.initialized = false;
+Kurento.init = function() {
+  var self = Kurento;
+
+  if (self.initialized) {
+    return;
+  }
+
+  if("WebSocket" in window) {
+    if (!self.initialized) {
+      console.log("this browser supports websockets");
+
+//    this.kurentoPort = "kurento-screenshare";
+      this.kurentoPort = "html5video";
+      this.hostName = window.location.hostname;
+      this.socketUrl = 'wss://' + this.hostName + '/' + this.kurentoPort;
+
+      ws = new ReconnectingWebSocket(this.socketUrl);
+
+      this.ws = ws;
+
+      // this.ws.onmessage = this.onWSMessage;
+      this.ws.onclose = function (close) {
+        // kurentoManager.exitScreenShare();
+        // self.onFail("Websocket connection closed");
+        console.log('CLOSED');
+      };
+      this.ws.onerror = function (error) {
+        // kurentoManager.exitScreenShare();
+        // self.onFail("Websocket connection error");
+        console.log('Error');
+      };
+      this.ws.onopen = function() {
+        // self.mediaCallback();
+        console.log("OPEN");
+      };
+    }
+
+    self.initialized = true;
+  }
+  else {
+    console.log("this browser does not support websockets");
+  }
+}
 
 this.KurentoManager= function () {
   this.kurentoVideo = null;
@@ -91,29 +139,6 @@ Kurento.prototype.create = function (tag) {
   this.setRenderTag(tag);
   this.iceServers = true;
   this.init();
-};
-
-Kurento.prototype.init = function () {
-  var self = this;
-  if("WebSocket" in window) {
-    console.log("this browser supports websockets");
-    this.ws = new ReconnectingWebSocket(this.socketUrl);
-
-    this.ws.onmessage = this.onWSMessage;
-    this.ws.onclose = function (close) {
-      kurentoManager.exitScreenShare();
-      self.onFail("Websocket connection closed");
-    };
-    this.ws.onerror = function (error) {
-      kurentoManager.exitScreenShare();
-      self.onFail("Websocket connection error");
-    };
-    this.ws.onopen = function() {
-      self.mediaCallback();
-    };
-  }
-  else
-    console.log("this browser does not support websockets");
 };
 
 Kurento.prototype.onWSMessage = function (message) {
@@ -350,9 +375,22 @@ window.kurentoShareVideo = function () {
   window.kurentoManager.shareVideo.apply(window.kurentoManager, arguments);
 };
 
-KurentoVideo = function () {
-  this.prototype = Kurento;
+KurentoVideo = function(
+  id,
+  shared,
+  tagId
+  ) {
 
+  this.prototype = Kurento;
+  this.tag = document.getElementById(tagId);
+
+  Kurento.call(this, this.tag, id, id, '', function(){}, function(){});
+
+  this.id = id;
+  this.shared = shared;
+  this.ws = ws;
+
+  this.init();
 }
 
 KurentoVideo.prototype.on = function(event) {
@@ -360,8 +398,6 @@ KurentoVideo.prototype.on = function(event) {
 };
 
 KurentoVideo.prototype.sendMessage = function(message) {
-  const ws = this.ws;
-
   // For the new MCS API, type of stream and user role
   message.type = 'video';
   message.role = 'user';
@@ -369,28 +405,27 @@ KurentoVideo.prototype.sendMessage = function(message) {
   const jsonMessage = JSON.stringify(message);
   console.log("Sending VIDEO message:");
   console.log(jsonMessage);
-  ws.send(jsonMessage, (error) => {
+  this.ws.send(jsonMessage, (error) => {
     if (error) {
       console.error(`client: Websocket error "${error}" on message "${jsonMessage.id}"`);
     }
   });
 }
 
-KurentoVideo.prototype.start = function (id, share, tag, responseCallback) {
+KurentoVideo.prototype.start = function (responseCallback) {
   this.responseCallback = responseCallback;
 
   const self = this;
+  const ws = self.ws;
 
-  const ws = this.state.ws;
-
-  console.log(`Starting video call for video: ${id}`);
-  console.log('Creating WebRtcPeer and generating local sdp offer ...');
+  console.log(`Starting video call for video: ${self.id}`);
+  console.log(' ----- Creating WebRtcPeer and generating local sdp offer ...');
 
   const onIceCandidate = function (candidate) {
     const message = {
       id: 'onIceCandidate',
       candidate,
-      cameraId: id,
+      cameraId: self.id,
     };
     self.sendMessage(message);
   };
@@ -401,14 +436,13 @@ KurentoVideo.prototype.start = function (id, share, tag, responseCallback) {
   };
 
   let peerObj;
-  if (shareWebcam) {
-    options.localVideo = tag;
+  if (self.shared) {
+    options.localVideo = this.tag;
     peerObj = kurentoUtils.WebRtcPeer.WebRtcPeerSendonly;
   } else {
     peerObj = kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly;
 
-    options.remoteVideo = tag;
-    document.getElementById('webcamArea').appendChild(options.remoteVideo);
+    options.remoteVideo = this.tag;
   }
 
   this.webRtcPeer = new peerObj(options, function (error) {
@@ -426,8 +460,8 @@ KurentoVideo.prototype.start = function (id, share, tag, responseCallback) {
       const message = {
         id: 'start',
         sdpOffer: offerSdp,
-        cameraId: id,
-        cameraShared: shareWebcam,
+        cameraId: self.id,
+        cameraShared: self.shared,
       };
       self.sendMessage(message);
     });
@@ -464,6 +498,10 @@ KurentoVideo.prototype.init = function() {
 
   this.ws.addEventListener('message', (msg) => {
     const parsedMessage = JSON.parse(msg.data);
+
+    if (msg.cameraId != this.id) {
+      return;
+    }
 
     console.debug('Received message new ws message: ');
     console.debug(parsedMessage);
@@ -610,7 +648,9 @@ KurentoManager.prototype.shareScreen = function (tag) {
   this.kurentoScreenShare.setScreenShare(tag);
 };
 
-window.KurentoVideo = KurentoVideo;
+window.initKurentoVideo = function() {
+  window.KurentoVideo = KurentoVideo;
+}
 
 window.kurentoShareScreen = function() {
   window.kurentoInitialize();

@@ -3,8 +3,6 @@ import ScreenshareContainer from '/imports/ui/components/screenshare/container';
 import styles from './styles.scss';
 //import KurentoVideo from '/imports/api/2.0/video/client/bridge/kurento';
 
-const KurentoVideo = window.KurentoVideo;
-
 class VideoElement extends Component {
   constructor(props) {
     super(props);
@@ -12,7 +10,7 @@ class VideoElement extends Component {
   }
 
   render() {
-    return <video id={props.id} width={props.width} height={props.height}/>;
+    return <video id={this.props.id} width={this.props.width} height={this.props.height}/>;
   }
 
 }
@@ -40,36 +38,39 @@ export default class VideoDock extends Component {
   componentDidMount() {
     const that = this;
     const { users } = this.props;
+    const KurentoVideo = window.KurentoVideo;
 
     for (let i = 0; i < users.length; i++) {
       if (users[i].has_stream) {
-
-        let videoElement = new VideoElement({id: `video-elem-${id}`,
-          width: 120, height: 90, autoPlay: true, videoId: id});
-
-        let videos = this.state.videos;
-        videos[id] = videoElement;
-        this.setState(videos);
-
-        KurentoVideo.start(users[i].userId, false, videoElement.props.id, () => {});
+        this.start(users[i].userId, false, this.getVideoId(users[i].userId));
       }
     }
 
-    document.addEventListener('joinVideo', function() { that.shareWebcam(); });// TODO find a better way to do this
-    document.addEventListener('exitVideo', function() { that.unshareWebcam(); });
+    document.addEventListener('joinVideo', () => { that.shareWebcam(); });// TODO find a better way to do this
+    document.addEventListener('exitVideo', () => { that.unshareWebcam(); });
+  }
+
+  start(id, shared, tagId) {
+    let st = this.state;
+
+    st.videos[id] = new KurentoVideo(id, shared, tagId);
+
+    st.videos[id].start(() => {
+
+    });
+
+    this.setState(st);
   }
 
   stop(id) {
+    const KurentoVideo = window.KurentoVideo;
 
     KurentoVideo.stop(id, () => {
-      // const videoTag = document.getElementById(`video-elem-${id}`);
-      // if (videoTag) {
-      //   document.getElementById('webcamArea').removeChild(videoTag);
-      // }
 
-      let videos = this.state.videos;
-      delete videos[id];
-      this.setState({videos: videos});
+      let st = this.state;
+      delete st.videos[id];
+
+      this.setState(st);
 
       adjustVideos('#webcamArea', true);
     });
@@ -78,11 +79,17 @@ export default class VideoDock extends Component {
   shareWebcam() {
     const { users } = this.props;
     const id = users[0].userId;
+    const KurentoVideo = window.KurentoVideo;
+
+    let st = this.state;
+    st.videos[id] = new KurentoVideo(id, true, this.refs.videoInput.id);
 
     // promise?
-    KurentoVideo.start(id, true, this.refs.videoInput.id, () => {
+    st.videos[id].start(() => {
       this.sendUserShareWebcam(id);
     });
+
+    this.setState(st);
   }
 
   unshareWebcam() {
@@ -91,13 +98,13 @@ export default class VideoDock extends Component {
     this.sendUserUnshareWebcam(id);
   }
 
-  handlePlayStop(id) {
+  handlePlayStop(video) {
     console.log('Handle play stop <--------------------');
 
-    this.stop(id);
+    this.stop(video.id);
   }
 
-  handlePlayStart(id) {
+  handlePlayStart(video) {
     console.log('Handle play start <===================');
 
     adjustVideos('#webcamArea', true);
@@ -108,6 +115,8 @@ export default class VideoDock extends Component {
   }
 
   render() {
+    let that = this;
+
     return (
 
       <div className={styles.videoDock}>
@@ -116,7 +125,9 @@ export default class VideoDock extends Component {
 
         {
           Object.keys(this.state.videos).map((id) => {
-            return this.state.videos[id];
+            return (
+              <VideoElement id={that.getVideoId(id)} key={that.getVideoId(id)} width={120} height={90} autoPlay={true} videoId={id} />
+            );
           })
         }
 
@@ -138,7 +149,7 @@ export default class VideoDock extends Component {
             console.log(`User ${nextUsers[i].has_stream ? '' : 'un'}shared webcam ${users[i].userId}`);
 
             if (nextUsers[i].has_stream) {
-              this.start(users[i].userId, false, this.refs.videoInput);
+              this.start(users[i].userId, false, this.refs.videoInput.id);
             } else {
               this.stop(users[i].userId);
             }
@@ -152,5 +163,9 @@ export default class VideoDock extends Component {
     }
 
     return false;
+  }
+
+  getVideoId(id) {
+    return `video-elem-${id}`;
   }
 }
