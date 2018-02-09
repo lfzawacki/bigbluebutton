@@ -33,7 +33,7 @@ let _onMessage = async function (_message) {
   let iceQueues = {};
   let iceQueue;
 
-  if (!message.cameraId) {
+  if (!message.cameraId && message.id !== 'close') {
     console.log("  [VideoManager] Undefined message.cameraId for session ", sessionId);
     return;
   }
