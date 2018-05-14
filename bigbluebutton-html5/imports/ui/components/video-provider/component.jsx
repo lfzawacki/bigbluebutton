@@ -66,6 +66,16 @@ class VideoProvider extends Component {
 
     this.pauseViewers = this.pauseViewers.bind(this);
     this.unpauseViewers = this.unpauseViewers.bind(this);
+    this.orientationChange = this.orientationChange.bind(this);
+  }
+
+  orientationChange () {
+    this.sendMessage({
+      cameraId: this.props.userId,
+      id: 'orientationChange',
+      type: 'video',
+      role: 'share'
+    });
   }
 
   _sendPauseStream (id, role, state) {
@@ -80,7 +90,6 @@ class VideoProvider extends Component {
 
   pauseViewers () {
     log("debug", "Calling pause in viewer streams");
-
 
     Object.keys(this.webRtcPeers).forEach((id) => {
       if (this.props.userId !== id) {
@@ -114,6 +123,8 @@ class VideoProvider extends Component {
 
     this.visibility.onVisible(this.unpauseViewers);
     this.visibility.onHidden(this.pauseViewers);
+
+    window.addEventListener('orientationchange', this.orientationChange);
   }
 
   shouldComponentUpdate({ users: nextUsers }, nextState) {
@@ -145,6 +156,8 @@ class VideoProvider extends Component {
 
     window.removeEventListener('online', this.openWs);
     window.removeEventListener('offline', this.onWsClose);
+
+    window.removeEventListener('orientationchange', this.orientationChange);
 
     this.visibility.removeEventListeners();
 
