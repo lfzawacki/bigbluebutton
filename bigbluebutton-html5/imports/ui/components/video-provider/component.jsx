@@ -57,7 +57,8 @@ const intlMediaErrorsMessages = defineMessages({
   },
 });
 
-const CAMERA_SHARE_FAILED_WAIT_TIME = 10000;
+const CAMERA_SHARE_FAILED_WAIT_TIME = 15000;
+const MAX_CAMERA_SHARE_FAILED_WAIT_TIME = 60000;
 const PING_INTERVAL = 15000;
 
 class VideoProvider extends Component {
@@ -75,8 +76,8 @@ class VideoProvider extends Component {
 
     this.visibility = new VisibilityEvent();
 
-    this.reconnectWebcam = false;
-    this.cameraTimeouts = {};
+    this.restartTimeout = {};
+    this.restartTimer = {};
     this.webRtcPeers = {};
 
     this.openWs = this.ws.open.bind(this.ws);
@@ -329,8 +330,9 @@ class VideoProvider extends Component {
     });
 
     // Clear the shared camera fail timeout when destroying
-    clearTimeout(this.cameraTimeouts[id]);
-    delete this.cameraTimeouts[id];
+    clearTimeout(this.restartTimeout[id]);
+    delete this.restartTimeout[id];
+
     this.destroyWebRTCPeer(id);
   }
 
@@ -346,7 +348,6 @@ class VideoProvider extends Component {
   }
 
   createWebRTCPeer(id, shareWebcam) {
-    const that = this;
     const { intl, meetingId } = this.props;
 
     const videoConstraints = {
@@ -369,7 +370,7 @@ class VideoProvider extends Component {
         audio: false,
         video: videoConstraints,
       },
-      onicecandidate: this.getOnIceCandidateCallback(id, shareWebcam),
+      onicecandidate: this._getOnIceCandidateCallback(id, shareWebcam),
     };
 
     let WebRtcPeerObj = window.kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly;
@@ -379,52 +380,26 @@ class VideoProvider extends Component {
       this.shareWebcam();
     }
 
-    WebRtcPeerObj.started = false;
+    this.webRtcPeers[id] = new WebRtcPeerObj(options, (error) => {
+      let peer = this.webRtcPeers[id];
 
-    that.webRtcPeers[id] = new WebRtcPeerObj(options, function (error) {
+      peer.started = false;
+      peer.attached = false;
+      peer.didSDPAnswered = false;
+      peer.iceQueue = [];
+
       if (error) {
-        log('error', ' WebRTC peerObj create error');
-        log('error', error);
-        const errorMessage = intlMediaErrorsMessages[error.name]
-        || intlMediaErrorsMessages.permissionError;
-        that.notifyError(intl.formatMessage(errorMessage));
-        /* This notification error is displayed considering kurento-utils
-         * returned the error 'The request is not allowed by the user agent
-         * or the platform in the current context.', but there are other
-         * errors that could be returned. */
-
-        that.stopWebRTCPeer(id);
-
-        if (shareWebcam) {
-          that.unshareWebcam();
-        }
-        return log('error', error);
+        return this._webRTCOnError(error, id, shareWebcam);
       }
 
-      this.didSDPAnswered = false;
-      this.iceQueue = [];
+      peer.generateOffer((error, offerSdp) => {
 
-      this.generateOffer((error, offerSdp) => {
         if (error) {
-          log('error', ' WebRtc generate offer error');
-
-          that.stopWebRTCPeer(id);
-          return log('error', error);
+          return this._webRTCOnError(error, id, shareWebcam);
         }
 
-        that.cameraTimeouts[id] = setTimeout(() => {
-          log('error', `Camera share has not suceeded in ${CAMERA_SHARE_FAILED_WAIT_TIME} for ${id}`);
-          if (that.props.userId == id) {
-            that.notifyError(intl.formatMessage(intlMessages.sharingError));
-            that.unshareWebcam();
-            that.destroyWebRTCPeer(id);
-          } else {
-            that.stopWebRTCPeer(id);
-            that.createWebRTCPeer(id, shareWebcam);
-          }
-        }, CAMERA_SHARE_FAILED_WAIT_TIME);
+        log('info', `Invoking SDP offer callback function ${location.host}`);
 
-        console.log(`Invoking SDP offer callback function ${location.host}`);
         const message = {
           type: 'video',
           role: shareWebcam ? 'share' : 'viewer',
@@ -433,25 +408,84 @@ class VideoProvider extends Component {
           cameraId: id,
           meetingId,
         };
-        that.sendMessage(message);
+        this.sendMessage(message);
+
+        this._processIceQueue(peer);
+
+        peer.didSDPAnswered = true;
       });
-      while (this.iceQueue.length) {
-        const candidate = this.iceQueue.shift();
-        this.addIceCandidate(candidate, (err) => {
-          if (err) {
-            this.notifyError(intl.formatMessage(intlMessages.iceCandidateError));
-            return console.error(`Error adding candidate: ${err}`);
-          }
-        });
-      }
-      this.didSDPAnswered = true;
     });
   }
 
-  getOnIceCandidateCallback(id, shareWebcam) {
-    const that = this;
+  _getWebRTCStartTimeout (id, shareWebcam, peer) {
+    const { intl } = this.props;
 
-    return function (candidate) {
+    return () => {
+      log('error', `Camera share has not suceeded in ${CAMERA_SHARE_FAILED_WAIT_TIME} for ${id}`);
+
+      if (this.props.userId === id) {
+        this.notifyError(intl.formatMessage(intlMessages.sharingError));
+        this.unshareWebcam();
+        this.destroyWebRTCPeer(id);
+      } else {
+        const tag = this.webRtcPeers[id].videoTag;
+
+        this.stopWebRTCPeer(id);
+        this.createWebRTCPeer(id, shareWebcam);
+
+        // We reattach the peer for a real video restart
+        this.attachVideoStream(id, tag);
+
+        // Increment reconnect interval
+        this.restartTimer[id] = Math.min(2*this.restartTimer[id], MAX_CAMERA_SHARE_FAILED_WAIT_TIME);
+      }
+    };
+  }
+
+  _processIceQueue (peer) {
+    const { intl } = this.props;
+
+    while (peer.iceQueue.length) {
+      const candidate = peer.iceQueue.shift();
+      peer.addIceCandidate(candidate, (err) => {
+        if (err) {
+          this.notifyError(intl.formatMessage(intlMessages.iceCandidateError));
+          return console.log(`Error adding candidate: ${err}`);
+        }
+      });
+    }
+  }
+
+  _webRTCOnError (error, id, shareWebcam) {
+    const { intl } = this.props;
+
+    log('error', ' WebRTC peerObj create error');
+    log('error', error);
+    const errorMessage = intlMediaErrorsMessages[error.name]
+      || intlMediaErrorsMessages.permissionError;
+    this.notifyError(intl.formatMessage(errorMessage));
+    /* This notification error is displayed considering kurento-utils
+     * returned the error 'The request is not allowed by the user agent
+     * or the platform in the current context.', but there are other
+     * errors that could be returned. */
+
+    this.stopWebRTCPeer(id);
+
+    return log('error', error);
+  }
+
+  _getOnIceCandidateCallback(id, shareWebcam) {
+    const peer = this.webRtcPeers[id];
+
+    return (candidate) => {
+      // Setup a timeout only when ice first is generated
+      if (!this.restartTimeout[id]) {
+        this.restartTimer[id] = this.restartTimer[id] || CAMERA_SHARE_FAILED_WAIT_TIME;
+
+        log('info', `Setting a camera connection restart in ${this.restartTimer[id]}`);
+        this.restartTimeout[id] = setTimeout(this._getWebRTCStartTimeout(id, shareWebcam, peer), this.restartTimer[id]);
+      }
+
       const message = {
         type: 'video',
         role: shareWebcam ? 'share' : 'viewer',
@@ -459,7 +493,7 @@ class VideoProvider extends Component {
         candidate,
         cameraId: id,
       };
-      that.sendMessage(message);
+      this.sendMessage(message);
     };
   }
 
