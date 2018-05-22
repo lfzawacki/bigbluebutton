@@ -92,7 +92,7 @@ class VideoProvider extends Component {
     log("debug", "Calling pause in viewer streams");
 
     Object.keys(this.webRtcPeers).forEach((id) => {
-      if (this.props.userId !== id) {
+      if (this.props.userId !== id && this.webRtcPeers[id].started) {
         this._sendPauseStream(id, 'viewer', true);
       }
     });
@@ -102,7 +102,7 @@ class VideoProvider extends Component {
     log("debug", "Calling un-pause in viewer streams");
 
     Object.keys(this.webRtcPeers).forEach((id) => {
-      if (id !== this.props.userId) {
+      if (id !== this.props.userId && this.webRtcPeers[id].started) {
         this._sendPauseStream(id, 'viewer', false);
       }
     });
