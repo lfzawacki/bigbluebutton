@@ -52,6 +52,7 @@
 			offerWebRTC="false"
 			chromeExtensionLink=""
 			chromeExtensionKey=""
+			chromeWin10Help="http://HOST/client/help/webrtc-screenshare-help.html"
 			baseTabIndex="201"
 			help="http://HOST/client/help/screenshare-help.html"
 		/>
@@ -109,6 +110,7 @@
 			baseTabIndex="501"
 			maxFileSize="30"
 			enableDownload="true"
+			disableFirefoxF60Upload="true"
 		/>
 
 		<module name="CaptionModule" url="http://HOST/client/CaptionModule.swf?v=VERSION"
