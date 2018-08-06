@@ -13,6 +13,9 @@ import AudioContainer from '../audio/container';
 import ChatNotificationContainer from '../chat/notification/container';
 import { styles } from './styles';
 
+import Storage from '/imports/ui/services/storage/session';
+import { injectGlobal } from 'styled-components';
+
 const MOBILE_MEDIA = 'only screen and (max-width: 40em)';
 const USERLIST_COMPACT_WIDTH = 50;
 
@@ -294,9 +297,28 @@ class App extends Component {
     );
   }
 
+  getGlobalCSS() {
+    const cssUrl = Storage.getItem('customdata').cssTheme;
+
+    if (!cssUrl) {
+      return;
+    }
+
+    function reqListener () {
+      injectGlobal`${this.responseText}`;
+    }
+
+    var req = new XMLHttpRequest();
+    req.addEventListener("load", reqListener);
+    req.open("GET", cssUrl);
+    req.send();
+  }
+
   render() {
     const { params, userlistIsOpen } = this.props;
     const { enableResize } = this.state;
+
+    this.getGlobalCSS();
 
     return (
       <main className={styles.main}>

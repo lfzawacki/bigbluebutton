@@ -66,7 +66,8 @@ export function joinRouteHandler(nextState, replace, callback) {
           const key = Object.keys(data).shift();
 
           const handledHTML5Parameters = [
-            'html5recordingbot'
+            'html5recordingbot',
+            'cssTheme',
           ];
           if (handledHTML5Parameters.indexOf(key) === -1) {
             return acc;
