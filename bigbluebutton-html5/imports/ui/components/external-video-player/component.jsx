@@ -4,6 +4,7 @@ import { sendMessage, onMessage } from './service';
 import logger from '/imports/startup/client/logger';
 
 import ArcPlayer from './custom-players/arc-player';
+import VideoRNP from './custom-players/video-rnp';
 
 import ReactPlayer from 'react-player';
 
@@ -12,6 +13,7 @@ import { styles } from './styles';
 const SYNC_INTERVAL_SECONDS = 2;
 
 ReactPlayer.addCustomPlayer(ArcPlayer);
+ReactPlayer.addCustomPlayer(VideoRNP);
 
 class VideoPlayer extends Component {
   constructor(props) {
@@ -108,7 +110,7 @@ class VideoPlayer extends Component {
   getCurrentPlaybackRate() {
     const intPlayer = this.player.getInternalPlayer();
 
-    return (intPlayer.getPlaybackRate && intPlayer.getPlaybackRate()) || 1;
+    return (intPlayer && intPlayer.getPlaybackRate && intPlayer.getPlaybackRate()) || 1;
   }
 
   keepSync() {
@@ -208,7 +210,7 @@ class VideoPlayer extends Component {
   }
 
   render() {
-    const { videoUrl } = this.props;
+    const { videoUrl, isPresenter } = this.props;
     const { playing, playbackRate, mutedByEchoTest } = this.state;
     const { opts, commonOpts, handleOnReady, handleStateChange } = this;
 
@@ -228,6 +230,7 @@ class VideoPlayer extends Component {
           onReady={this.handleOnReady}
           onPlay={this.handleOnPlay}
           onPause={this.handleOnPause}
+          //remoteControl={isPresenter}
           ref={(ref) => { this.player = ref; }}
         />
       </div>
