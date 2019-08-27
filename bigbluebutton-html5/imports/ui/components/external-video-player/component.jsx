@@ -19,7 +19,7 @@ class VideoPlayer extends Component {
   constructor(props) {
     super(props);
 
-    const isPresenter = { props };
+    const { isPresenter } = props;
 
     this.player = null;
     this.syncInterval = null;
@@ -40,6 +40,9 @@ class VideoPlayer extends Component {
           ecver: 2,
           controls: this.props.isPresenter ? 1 : 2,
         },
+      },
+      rnp: {
+        remoteControl: !isPresenter,
       },
       preload: true,
     };
@@ -201,7 +204,7 @@ class VideoPlayer extends Component {
 
   handleOnPause() {
     const { isPresenter } = this.props;
-    const curTime = this.player.getCurrentTime();
+    const curTime = this.player && this.player.getCurrentTime();
 
     if (isPresenter) {
       sendMessage('stop', { time: curTime });
@@ -230,7 +233,6 @@ class VideoPlayer extends Component {
           onReady={this.handleOnReady}
           onPlay={this.handleOnPlay}
           onPause={this.handleOnPause}
-          //remoteControl={isPresenter}
           ref={(ref) => { this.player = ref; }}
         />
       </div>
