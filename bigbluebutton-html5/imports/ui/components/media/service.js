@@ -7,6 +7,8 @@ import Settings from '/imports/ui/services/settings';
 import VideoService from '/imports/ui/components/video-provider/service';
 import PollingService from '/imports/ui/components/polling/service';
 import getFromUserSettings from '/imports/ui/services/users-settings';
+import GenericContentService from '/imports/ui/components/generic-content/service';
+import { getComponentUrl, getComponentName } from '/imports/ui/components/generic-component/service';
 
 const LAYOUT_CONFIG = Meteor.settings.public.layout;
 const KURENTO_CONFIG = Meteor.settings.public.kurento;
@@ -37,6 +39,11 @@ function shouldShowScreenshare() {
 function shouldShowExternalVideo() {
   const { enabled: enableExternalVideo } = Meteor.settings.public.externalVideoPlayer;
   return enableExternalVideo && getVideoUrl();
+}
+
+function shouldShowGenericComponent() {
+  const enableGenericComponent = true;
+  return enableGenericComponent && getComponentUrl();
 }
 
 function shouldShowOverlay() {
@@ -70,6 +77,9 @@ export default {
   shouldShowWhiteboard,
   shouldShowScreenshare,
   shouldShowExternalVideo,
+  shouldShowGenericComponent,
+  getComponentUrl,
+  getComponentName,
   shouldShowOverlay,
   isUserPresenter,
   isVideoBroadcasting,

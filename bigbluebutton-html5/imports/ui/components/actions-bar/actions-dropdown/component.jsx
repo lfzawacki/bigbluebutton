@@ -13,6 +13,7 @@ import { withModalMounter } from '/imports/ui/components/modal/service';
 import withShortcutHelper from '/imports/ui/components/shortcut-help/service';
 import { styles } from '../styles';
 import ExternalVideoModal from '/imports/ui/components/external-video-player/modal/container';
+import GenericComponentModal from '/imports/ui/components/generic-component/modal/container';
 
 const propTypes = {
   amIPresenter: PropTypes.bool.isRequired,
@@ -86,6 +87,8 @@ class ActionsDropdown extends PureComponent {
 
     this.handlePresentationClick = this.handlePresentationClick.bind(this);
     this.handleExternalVideoClick = this.handleExternalVideoClick.bind(this);
+    this.handleGenericComponentStart = this.handleGenericComponentStart.bind(this);
+    this.handleGenericComponentStop = this.handleGenericComponentStop.bind(this);
   }
 
   componentWillUpdate(nextProps) {
@@ -105,6 +108,9 @@ class ActionsDropdown extends PureComponent {
       isSharingVideo,
       isPollingEnabled,
       stopExternalVideoShare,
+      activeGenericContentId,
+      enabledGenericComponents,
+      genericComponentName,
     } = this.props;
 
     const {
@@ -173,12 +179,36 @@ class ActionsDropdown extends PureComponent {
           />
         )
         : null),
-    ]);
+    ],
+    (enabledGenericComponents.map((component) => {
+      const { name, urlRegex, icon } = component;
+      return (amIPresenter && (!genericComponentName || genericComponentName == name)
+      ? (
+        <DropdownListItem
+          icon={icon}
+          label={genericComponentName === name ? `Stop sharing ${name}` : `Share ${name}`}
+          description={`Share ${name}`}
+          key={name}
+          onClick={genericComponentName === name ? this.handleGenericComponentStop : () => { this.handleGenericComponentStart(name, urlRegex) } }
+        />
+      )
+      : null);
+    }))
+    ));
   }
 
   handleExternalVideoClick() {
     const { mountModal } = this.props;
     mountModal(<ExternalVideoModal />);
+  }
+
+  handleGenericComponentStart(name, regex) {
+    this.props.mountModal(<GenericComponentModal name={name} regex={regex} />);
+  }
+
+  handleGenericComponentStop() {
+    const { genericComponentName, stopGenericComponent } = this.props;
+    stopGenericComponent(genericComponentName);
   }
 
   handlePresentationClick() {

@@ -52,4 +52,7 @@ export default withTracker(() => ({
   isThereCurrentPresentation: Presentations.findOne({ meetingId: Auth.meetingID, current: true },
     { fields: {} }),
   allowExternalVideo: Meteor.settings.public.externalVideoPlayer.enabled,
+  enabledGenericComponents: Service.enabledGenericComponents(),
+  genericComponentName: Service.genericComponentName(),
+  stopGenericComponent: Service.stopGenericComponent,
 }))(injectIntl(ActionsBarContainer));
