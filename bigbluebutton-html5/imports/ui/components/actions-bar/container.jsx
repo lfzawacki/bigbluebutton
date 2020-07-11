@@ -54,5 +54,6 @@ export default withTracker(() => ({
   allowExternalVideo: Meteor.settings.public.externalVideoPlayer.enabled,
   enabledGenericComponents: Service.enabledGenericComponents(),
   genericComponentName: Service.genericComponentName(),
+  startGenericComponent: Service.startGenericComponent,
   stopGenericComponent: Service.stopGenericComponent,
 }))(injectIntl(ActionsBarContainer));

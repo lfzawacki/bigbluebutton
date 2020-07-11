@@ -4,7 +4,7 @@ import { makeCall } from '/imports/ui/services/api';
 import Meetings from '/imports/api/meetings';
 import Breakouts from '/imports/api/breakouts';
 import { getVideoUrl } from '/imports/ui/components/external-video-player/service';
-import { getComponentName, enabledGenericComponents, stopGenericComponent } from '/imports/ui/components/generic-component/service';
+import { getComponentName, enabledGenericComponents, startGenericComponent, stopGenericComponent } from '/imports/ui/components/generic-component/service';
 
 const USER_CONFIG = Meteor.settings.public.user;
 const ROLE_MODERATOR = USER_CONFIG.role_moderator;
@@ -49,5 +49,6 @@ export default {
   isSharingVideo: () => getVideoUrl(),
   enabledGenericComponents,
   genericComponentName: getComponentName,
+  startGenericComponent,
   stopGenericComponent,
 };

@@ -28,6 +28,15 @@ public:
     allowFullscreen: true
     remainingTimeThreshold: 30
     remainingTimeAlertThreshold: 1
+    genericComponents:
+      gdocs:
+        name: "Google Docs"
+        urlRegex: '^https:\/\/docs.google.com\/([a-z]+)\/d\/(.*)(\/edit)'
+        icon: "presentation"
+      threejs:
+        name: "3D object"
+        urlRegex: '^https:\/\/threejs.org\/(.*)'
+        icon: "presentation"
     defaultSettings:
       application:
         animations: true

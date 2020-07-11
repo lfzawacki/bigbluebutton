@@ -179,22 +179,22 @@ class ActionsDropdown extends PureComponent {
           />
         )
         : null),
+      (enabledGenericComponents.map((component) => {
+        const { name, urlRegex, icon } = component;
+        return (amIPresenter && (!genericComponentName || genericComponentName == name)
+        ? (
+          <DropdownListItem
+            icon={icon}
+            label={genericComponentName === name ? `Stop sharing ${name}` : `Share ${name}`}
+            description={`Share ${name}`}
+            key={name}
+            onClick={genericComponentName === name ? this.handleGenericComponentStop : () => { this.handleGenericComponentStart(name, urlRegex) } }
+          />
+        )
+        : []);
+      })),
     ],
-    (enabledGenericComponents.map((component) => {
-      const { name, urlRegex, icon } = component;
-      return (amIPresenter && (!genericComponentName || genericComponentName == name)
-      ? (
-        <DropdownListItem
-          icon={icon}
-          label={genericComponentName === name ? `Stop sharing ${name}` : `Share ${name}`}
-          description={`Share ${name}`}
-          key={name}
-          onClick={genericComponentName === name ? this.handleGenericComponentStop : () => { this.handleGenericComponentStart(name, urlRegex) } }
-        />
-      )
-      : null);
-    }))
-    ));
+    );
   }
 
   handleExternalVideoClick() {
@@ -203,7 +203,12 @@ class ActionsDropdown extends PureComponent {
   }
 
   handleGenericComponentStart(name, regex) {
-    this.props.mountModal(<GenericComponentModal name={name} regex={regex} />);
+    const { startGenericComponent } = this.props;
+    this.props.mountModal(<GenericComponentModal
+      name={name}
+      regex={regex}
+      startGenericComponent={startGenericComponent}
+    />);
   }
 
   handleGenericComponentStop() {

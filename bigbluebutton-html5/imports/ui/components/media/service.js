@@ -7,7 +7,6 @@ import Settings from '/imports/ui/services/settings';
 import VideoService from '/imports/ui/components/video-provider/service';
 import PollingService from '/imports/ui/components/polling/service';
 import getFromUserSettings from '/imports/ui/services/users-settings';
-import GenericContentService from '/imports/ui/components/generic-content/service';
 import { getComponentUrl, getComponentName } from '/imports/ui/components/generic-component/service';
 
 const LAYOUT_CONFIG = Meteor.settings.public.layout;

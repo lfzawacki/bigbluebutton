@@ -38,6 +38,7 @@ class ActionsBar extends PureComponent {
       allowExternalVideo,
       enabledGenericComponents,
       genericComponentName,
+      startGenericComponent,
       stopGenericComponent,
     } = this.props;
 
@@ -60,6 +61,7 @@ class ActionsBar extends PureComponent {
             isSharingVideo,
             enabledGenericComponents,
             genericComponentName,
+            startGenericComponent,
             stopGenericComponent,
             stopExternalVideoShare,
             isMeteorConnected,
