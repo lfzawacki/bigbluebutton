@@ -31,9 +31,8 @@ class GenericComponent extends Component {
 
   componentDidUpdate(prevProp, prevState) {
     // Detect presenter change and redo the share to switch the presenter
-    if (this.props.isPresenter !== prevProp.isPresenter) {
+    if (!this.props.isPresenter && prevProp.isPresenter) {
       const { startGenericComponent, stopGenericComponent, url, name } = this.props;
-
       stopGenericComponent();
       startGenericComponent(name, url);
     }
@@ -46,11 +45,6 @@ class GenericComponent extends Component {
   componentWillUnmount() {
     window.removeEventListener('resize', this.resizeListener);
     window.removeEventListener('beforeunload', this.onBeforeUnload);
-  }
-
-  componentDidUpdate(prevProp, prevState) {
-    if (this.props.isPresenter !== prevProp.isPresenter) {
-    }
   }
 
   shouldComponentUpdate(nextProps, nextState) {
