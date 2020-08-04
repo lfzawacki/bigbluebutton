@@ -29,6 +29,16 @@ class GenericComponent extends Component {
     window.addEventListener('beforeunload', this.onBeforeUnload);
   }
 
+  componentDidUpdate(prevProp, prevState) {
+    // Detect presenter change and redo the share to switch the presenter
+    if (this.props.isPresenter !== prevProp.isPresenter) {
+      const { startGenericComponent, stopGenericComponent, url, name } = this.props;
+
+      stopGenericComponent();
+      startGenericComponent(name, url);
+    }
+  }
+
   onBeforeUnload() {
     const { isPresenter } = this.props;
   }
@@ -102,7 +112,10 @@ class GenericComponent extends Component {
     }
     const { meetingID, userName, isPresenter, } = this.props;
 
-    const params = { meetingID, userName, isPresenter, };
+    const params = { meetingID, userName };
+    if (isPresenter) {
+      params.isPresenter = true;
+    }
 
     return (
       <div
