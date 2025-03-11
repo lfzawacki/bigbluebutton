@@ -104,11 +104,14 @@ const AudioCaptionsSpeech: React.FC<AudioCaptionsSpeechProps> = ({
     speechRecognition.continuous = true;
     speechRecognition.interimResults = true;
 
+    let chosenLocale;
     if (fixedLocaleResult || localeAsDefaultSelected()) {
-      setUserLocaleProperty(getLocale(), setUserSpeechLocale);
+      chosenLocale = getLocale();
     } else {
-      setUserLocaleProperty(navigator.language, setUserSpeechLocale);
+      chosenLocale = navigator.language;
     }
+
+    setUserLocaleProperty(chosenLocale, setUserSpeechLocale);
 
     return speechRecognition;
   };
@@ -166,10 +169,11 @@ const AudioCaptionsSpeech: React.FC<AudioCaptionsSpeechProps> = ({
 
     stop();
     if (!mutedRef.current) {
-      logger.debug("Speech recogniction ended by browser, but we're not muted. Restart it");
-      start(localeRef.current);
+      logger.debug("Speech recognition ended by browser, but we're not muted. Restart it");
+      start(locale);
     }
-  }, []);
+  }, [locale, mutedRef]);
+
   const onError = useCallback((event: SpeechRecognitionErrorEvent) => {
     logger.error({
       logCode: 'captions_speech_recognition_error',
@@ -177,7 +181,7 @@ const AudioCaptionsSpeech: React.FC<AudioCaptionsSpeechProps> = ({
         error: event.error,
         message: event.message,
       },
-    }, 'Captions speech recognition error');
+    }, `Captions speech recognition error '${event.error}'`);
   }, []);
 
   const onResult = useCallback((event: SpeechRecognitionEvent) => {
@@ -230,7 +234,7 @@ const AudioCaptionsSpeech: React.FC<AudioCaptionsSpeechProps> = ({
 
   const start = (settedLocale: string) => {
     if (speechRecognitionRef.current && isLocaleValid(settedLocale)) {
-      logger.debug('Starting browser speech recognition');
+      logger.debug(`Starting browser speech recognition ${settedLocale}`);
       speechRecognitionRef.current.lang = settedLocale;
 
       if (speechHasStarted.started) {
