@@ -9,7 +9,8 @@
     "tscheck": "tsc",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "lint:file": "eslint"
+    "lint:file": "eslint",
+    "prepare": "panda codegen"
   },
   "lint-staged": {
     "*.{js,jsx}": [
@@ -125,6 +126,7 @@
     "@babel/preset-env": "7.24.8",
     "@babel/preset-react": "7.24.7",
     "@babel/preset-typescript": "7.24.7",
+    "@pandacss/dev": "^0.53.3",
     "@types/emoji-mart": "^3.0.9",
     "@types/react": "18.3.3",
     "@types/react-dom": "^18.2.7",

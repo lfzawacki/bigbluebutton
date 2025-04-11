@@ -7,3 +7,7 @@ public/locales/ja_JP.json
 public/files
 dist/
 tsconfig.tsbuildinfo
+
+## Panda
+styled-system
+styled-system-studio

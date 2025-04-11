@@ -173,7 +173,7 @@ const GuestOptionsContainer = styled.div`
 
 const AcceptDenyButtonsContainer = styled.div`
   display: inline-flex;
-  justify-content: space-between
+  justify-content: space-between;
   align-items: center;
   padding: 0px 0.5rem 0.5rem;
   gap: 1.5rem;

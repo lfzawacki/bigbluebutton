@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import './index.css';
 import AppContainer from '/imports/ui/components/app/container';
 import Session from '/imports/ui/services/storage/in-memory';
 import DebugWindow from '/imports/ui/components/debug-window/component';

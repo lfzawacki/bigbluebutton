@@ -62,7 +62,7 @@ const Content = styled.div`
     }
   }
 
-  //top-left
+  /* top-left */
   bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
@@ -115,7 +115,7 @@ const Scrollable = styled.div`
     background-size: 100% 40px, 100% 40px, 100% 14px, 100% 14px;
     background-attachment: local, local, scroll, scroll;
 
-    // Fancy scroll
+    /* Fancy scroll */
     &::-webkit-scrollbar {
       width: 5px;
       height: 5px;

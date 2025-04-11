@@ -65,7 +65,7 @@ const ToastContent = styled.div`
   margin-right: ${smPaddingX};
   display: flex;
   justify-content: space-between;
-  // justify-content: flex-end;
+  /* justify-content: flex-end; */
   [dir="rtl"] & {
     margin-right: 0;
     margin-left: ${smPaddingX};

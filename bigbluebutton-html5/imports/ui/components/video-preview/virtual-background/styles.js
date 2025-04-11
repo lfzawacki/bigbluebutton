@@ -26,11 +26,11 @@ const VirtualBackgroundRowThumbnail = styled.div`
 const BgWrapper = styled(ScrollboxVertical)`
   display: flex;
   justify-content: flex-start;
-  //max-width: 272px;
+  /* max-width: 272px; */
   max-height: 216px;
   flex-wrap: wrap;
   overflow-y: auto;
-  //margin: ${borderSizeLarge};
+  /* margin: ${borderSizeLarge}; */
   padding: ${borderSizeLarge};
 
   @media ${smallOnly}, ${mediumOnly} {

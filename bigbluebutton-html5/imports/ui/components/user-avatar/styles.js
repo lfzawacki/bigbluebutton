@@ -23,7 +23,7 @@ const Content = styled.div`
 
   &,
   & > * {
-    line-height: 0; // to keep centralized vertically
+    line-height: 0; /* to keep centralized vertically */
   }
 `;
 

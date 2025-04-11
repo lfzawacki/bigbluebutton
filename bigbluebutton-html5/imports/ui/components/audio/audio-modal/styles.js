@@ -21,7 +21,7 @@ const AudioModalButton = styled(Button)`
     color: #3c5764;
   }
 
-  // Modifies the audio button icon colour
+  /* Modifies the audio button icon colour */
   & span:first-child {
     display: inline-block;
     color: #1b3c4b;
@@ -35,14 +35,14 @@ const AudioModalButton = styled(Button)`
     }
   }
 
-  // When hovering over a button of class audioBtn, change the border colour of first span-child
+  /* When hovering over a button of class audioBtn, change the border colour of first span-child */
   &:hover span:first-child,
   &:focus span:first-child {
     border: 5px solid ${colorPrimary};
     background-color: #f1f8ff;
   }
 
-  // Modifies the button label text
+  /* Modifies the button label text */
   & span:last-child {
     display: block;
     color: black;
