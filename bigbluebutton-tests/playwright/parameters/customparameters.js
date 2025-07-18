@@ -166,7 +166,7 @@ class CustomParameters extends MultiUsers {
     await this.userPage.hasElement(e.restorePresentation, 'should display the restore presentation button for the attendee');
     await this.userPage.wasRemoved(e.whiteboard, 'should not display the whiteboard for the attendee');
     await utilScreenShare.startScreenshare(this.modPage);
-    
+
     await this.userPage.hasElement(e.screenShareVideo, 'should display the screenshare element');
     await this.modPage.waitAndClick(e.stopScreenSharing);
     await this.modPage.hasElement(e.mediaAreaButton, 'should display the media area button');
@@ -206,7 +206,7 @@ class CustomParameters extends MultiUsers {
     await this.userPage.hasElement(e.restorePresentation, 'should display the restore presentation button for the attendee');
     await this.userPage.wasRemoved(e.whiteboard, 'should not display the whiteboard for the attendee');
 
-    await this.modPage.waitAndClick(e.sharedNotes);
+    await this.modPage.waitAndClick(e.sharedNotesSidebarButton);
     await this.modPage.waitAndClick(e.notesOptions);
     await this.modPage.waitAndClick(e.pinNotes);
     await this.modPage.hasElement(e.unpinNotes, 'should display the unpin notes button');
@@ -243,23 +243,20 @@ class CustomParameters extends MultiUsers {
     await this.userPage.hasElement(e.restorePresentation, 'should display the restore presentation button for the attendee');
     await this.userPage.wasRemoved(e.whiteboard, 'should not display the whiteboard for the attendee');
 
-    await this.modPage.waitAndClick(e.manageUsers);
-    await this.modPage.waitAndClick(e.createBreakoutRooms);
+    await this.modPage.waitAndClick(e.breakoutRoomSidebarButton);
 
     await this.modPage.dragDropSelector(e.attendeeNotAssigned, e.breakoutBox1);
 
-    await this.modPage.waitAndClick(e.modalConfirmButton, ELEMENT_WAIT_LONGER_TIME);
-    await this.modPage.hasElement(e.breakoutRoomsItem, 'should have the breakout room item');
+    await this.modPage.waitAndClick(e.createBreakoutRoomsButton, ELEMENT_WAIT_LONGER_TIME);
 
     await this.userPage.bringToFront();
     await this.userPage.waitAndClick(e.modalConfirmButton);
     const breakoutUserPage = await this.userPage.getLastTargetPage(this.userPage.context);
     await breakoutUserPage.bringToFront();
     await breakoutUserPage.closeAudioModal();
-    
+
     await breakoutUserPage.hasElement(e.presentationTitle, 'should display the presentation title inside the breakout room');
     await breakoutUserPage.wasRemoved(e.whiteboard);
-    await this.modPage.waitAndClick(e.breakoutRoomsItem);
     await this.modPage.waitAndClick(e.breakoutOptionsMenu);
     await this.modPage.closeAllToastNotifications();
     await this.modPage.waitAndClick(e.endAllBreakouts);
@@ -401,7 +398,7 @@ class CustomParameters extends MultiUsers {
   }
 
   async overrideDefaultLocaleTest() {
-    await this.modPage.hasText(e.chatButton, 'Bate-papo público','should display the new overridden default locale');
+    await this.modPage.hasText(e.chatButton, 'Bate-papo público', 'should display the new overridden default locale');
   }
 
   async hideNavBarTest() {
@@ -442,9 +439,9 @@ class CustomParameters extends MultiUsers {
     await this.modPage.waitForSelector(e.whiteboard);
     await this.userPage.waitForSelector(e.whiteboard);
     await checkScreenshots(this, 'should the cameras be above the presentation', [e.webcamContainer, e.webcamMirroredVideoContainer], 'smart-layout', 1);
-    
-    await this.modPage.waitAndClick(e.userListToggleBtn);
-    await this.modPage.wasRemoved(e.chatButton, '');
+
+    await this.modPage.waitAndClick(e.messagesSidebarButton);
+    await this.modPage.wasRemoved(e.sendButton, 'should not be displayed the send button');
     await sleep(1000); // wait for the whiteboard zoom to stabilize
 
     await checkScreenshots(this, 'should the cameras be on the side of presentation', [e.webcamContainer, e.webcamMirroredVideoContainer], 'smart-layout', 2);
@@ -464,17 +461,17 @@ class CustomParameters extends MultiUsers {
   async enforceVideoFocus() {
     await this.modPage.waitForSelector(e.whiteboard);
     await this.userPage.waitForSelector(e.whiteboard);
-    
-    await this.modPage.waitAndClick(e.joinVideo); 
+
+    await this.modPage.waitAndClick(e.joinVideo);
     await this.modPage.bringToFront();
     await this.modPage.hasElement(e.webcamMirroredVideoPreview, 'should display the video preview when sharing webcam ', ELEMENT_WAIT_TIME);
     await this.modPage.waitAndClick(e.startSharingWebcam);
 
-    await this.userPage.waitAndClick(e.joinVideo); 
+    await this.userPage.waitAndClick(e.joinVideo);
     await this.userPage.bringToFront();
     await this.userPage.hasElement(e.webcamMirroredVideoPreview, 'should display the video preview when sharing webcam ', ELEMENT_WAIT_TIME);
     await this.userPage.waitAndClick(e.startSharingWebcam);
-        
+
     await this.modPage.waitForSelector(e.webcamMirroredVideoContainer, VIDEO_LOADING_WAIT_TIME);
     await this.modPage.waitForSelector(e.leaveVideo, VIDEO_LOADING_WAIT_TIME);
     await this.modPage.hasNElements('video', 2, 'should display the 2 video elements after both users shared their webcams');
@@ -487,7 +484,7 @@ class CustomParameters extends MultiUsers {
 
     await this.modPage.shareWebcam();
     await this.userPage.shareWebcam();
-    
+
 
     await checkScreenshots(this, 'should be the cameras only layout', [e.webcamContainer, e.webcamMirroredVideoContainer], 'enforce-cameras-only');
   }
@@ -497,7 +494,6 @@ class CustomParameters extends MultiUsers {
     await this.modPage.wasRemoved(e.joinVideo);
 
     await this.modPage.hasElement(e.chatMessages);
-    await this.modPage.hasElement(e.userListContent);
 
     await checkScreenshots(this, 'should be the participants and chat only layout', [e.webcamContainer, e.webcamMirroredVideoContainer], 'enforce-participants-and-chat-only');
   }
@@ -541,8 +537,7 @@ class CustomParameters extends MultiUsers {
     await this.modPage.dragAndDropWebcams(e.dropAreaSidebarBottom);
     await checkScreenshots(this, 'should be on custom layout', [e.webcamContainer, e.webcamMirroredVideoContainer], 'enforce-custom-layout', 3);
 
-    await this.modPage.waitAndClick(e.userListToggleBtn);
-    await this.modPage.wasRemoved(e.chatButton, 'should not be displayed the chat button');
+    await this.modPage.waitAndClick(e.messagesSidebarButton);
     await this.modPage.wasRemoved(e.sendButton, 'should not be displayed the send button');
     await sleep(1000);
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import ErrorBoundary from '/imports/ui/components/common/error-boundary/component';
+import PropTypes from 'prop-types';
 import FallbackModal from '/imports/ui/components/common/fallback-errors/fallback-modal/component';
 import { useMutation } from '@apollo/client';
 import Service from './service';
@@ -14,21 +15,18 @@ import {
 import {
   PRESENTATIONS_SUBSCRIPTION,
 } from '/imports/ui/components/whiteboard/queries';
-import useCurrentUser from '/imports/ui/core/hooks/useCurrentUser';
 import {
   PRESENTATION_SET_DOWNLOADABLE,
   PRESENTATION_EXPORT,
   PRESENTATION_SET_CURRENT,
   PRESENTATION_REMOVE,
-} from '../mutations';
-import { useStorageKey } from '/imports/ui/services/storage/hooks';
+} from '/imports/ui/components/presentation/mutations';
 import useDeduplicatedSubscription from '/imports/ui/core/hooks/useDeduplicatedSubscription';
 
 const PresentationUploaderContainer = (props) => {
-  const { data: currentUserData } = useCurrentUser((user) => ({
-    presenter: user.presenter,
-  }));
-  const userIsPresenter = currentUserData?.presenter;
+  const {
+    amIPresenter, onActionCompleted, setPresentationFitToWidth, ...restProps
+  } = props;
 
   const { data: presentationData } = useDeduplicatedSubscription(PRESENTATIONS_SUBSCRIPTION);
   const presentations = presentationData?.pres_presentation || [];
@@ -59,6 +57,7 @@ const PresentationUploaderContainer = (props) => {
   };
 
   const setPresentation = (presentationId) => {
+    setPresentationFitToWidth(false);
     presentationSetCurrent({ variables: { presentationId } });
   };
 
@@ -72,21 +71,21 @@ const PresentationUploaderContainer = (props) => {
   const allowDownloadWithAnnotations = useIsDownloadPresentationWithAnnotationsEnabled();
   const externalUploadData = Service.useExternalUploadData();
   const PRESENTATION_CONFIG = window.meetingClientSettings.public.presentation;
-  const isOpen = (useStorageKey('showUploadPresentationView') || false) && presentationEnabled;
-  const selectedToBeNextCurrent = useStorageKey('selectedToBeNextCurrent') || null;
 
-  return userIsPresenter && (
+  if (!amIPresenter) {
+    return null;
+  }
+
+  return (
     <ErrorBoundary Fallback={FallbackModal}>
       <PresentationUploader
-        isPresenter={userIsPresenter}
+        isPresenter={amIPresenter}
         presentations={presentations}
         currentPresentation={currentPresentation}
         exportPresentation={exportPresentation}
         dispatchChangePresentationDownloadable={dispatchChangePresentationDownloadable}
         setPresentation={setPresentation}
         removePresentation={removePresentation}
-        isOpen={isOpen}
-        selectedToBeNextCurrent={selectedToBeNextCurrent}
         fileUploadConstraintsHint={PRESENTATION_CONFIG.fileUploadConstraintsHint}
         fileSizeMax={PRESENTATION_CONFIG.mirroredFromBBBCore.uploadSizeMax}
         filePagesMax={PRESENTATION_CONFIG.mirroredFromBBBCore.uploadPagesMax}
@@ -103,10 +102,17 @@ const PresentationUploaderContainer = (props) => {
         handleFiledrop={Service.handleFiledrop}
         dispatchDisableDownloadable={Service.dispatchDisableDownloadable}
         dispatchEnableDownloadable={Service.dispatchEnableDownloadable}
-        {...props}
+        onActionCompleted={onActionCompleted}
+        {...restProps}
       />
     </ErrorBoundary>
   );
+};
+
+PresentationUploaderContainer.propTypes = {
+  amIPresenter: PropTypes.bool.isRequired,
+  onActionCompleted: PropTypes.func.isRequired,
+  setPresentationFitToWidth: PropTypes.func.isRequired,
 };
 
 export default PresentationUploaderContainer;

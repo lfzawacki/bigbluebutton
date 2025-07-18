@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import { defineMessages } from 'react-intl';
 import { ActionsBarItemType, ActionsBarPosition } from 'bigbluebutton-html-plugin-sdk/dist/cjs/extensible-areas/actions-bar-item/enums';
 import Styled from './styles';
-import MediaAreaDropdown from './media-area-dropdown/container';
+import MediaAreaContainer from './media-area/container';
 import AudioCaptionsButtonContainer from '/imports/ui/components/audio/audio-graphql/audio-captions/button/component';
 import ScreenshareButtonContainer from '/imports/ui/components/actions-bar/screenshare/container';
 import AudioControlsContainer from '../audio/audio-graphql/audio-controls/component';
@@ -66,7 +66,7 @@ class ActionsBar extends PureComponent {
                 actionBarItemToReturn = (
                   <Button
                     {
-                      ...buttonProps
+                    ...buttonProps
                     }
                   />
                 );
@@ -223,22 +223,22 @@ class ActionsBar extends PureComponent {
           <Styled.Right>
             <Styled.PresentationButtonsWrapper>
               {shouldShowPresentationButton && shouldShowOptionsButton
-              && (
-                <PresentationOptionsContainer
-                  presentationIsOpen={presentationIsOpen}
-                  setPresentationIsOpen={setPresentationIsOpen}
-                  layoutContextDispatch={layoutContextDispatch}
-                  hasPresentation={isThereCurrentPresentation}
-                  hasExternalVideo={isSharingVideo}
-                  hasScreenshare={hasScreenshare}
-                  hasPinnedSharedNotes={isSharedNotesPinned}
-                  hasGenericContent={hasGenericContent}
-                  hasCameraAsContent={hasCameraAsContent}
-                  isDarkThemeEnabled={isDarkThemeEnabled}
-                />
-              )}
-              { (amIPresenter || amIModerator) && (<Styled.Divider />)}
-              <MediaAreaDropdown {...{
+                && (
+                  <PresentationOptionsContainer
+                    presentationIsOpen={presentationIsOpen}
+                    setPresentationIsOpen={setPresentationIsOpen}
+                    layoutContextDispatch={layoutContextDispatch}
+                    hasPresentation={isThereCurrentPresentation}
+                    hasExternalVideo={isSharingVideo}
+                    hasScreenshare={hasScreenshare}
+                    hasPinnedSharedNotes={isSharedNotesPinned}
+                    hasGenericContent={hasGenericContent}
+                    hasCameraAsContent={hasCameraAsContent}
+                    isDarkThemeEnabled={isDarkThemeEnabled}
+                  />
+                )}
+              {(amIPresenter || amIModerator) && (<Styled.Divider />)}
+              <MediaAreaContainer {...{
                 amIPresenter,
                 amIModerator,
                 isPollingEnabled,
@@ -255,6 +255,7 @@ class ActionsBar extends PureComponent {
                 showPushLayout,
                 hasCameraAsContent,
                 setPresentationFitToWidth,
+                hasPresentation: isThereCurrentPresentation,
               }}
               />
             </Styled.PresentationButtonsWrapper>

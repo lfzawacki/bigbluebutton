@@ -1,4 +1,9 @@
 // Common
+exports.actions = 'button[data-test="actionsButton"]';
+exports.actionsItem = 'div[id="actions-dropdown-menu"] ul li';
+exports.presentationNames = 'div[data-test="presentationName"]';
+exports.presentationThumbnails = 'button[data-test="presentationThumbnail"]';
+exports.sharePresentationButton = 'button[data-test="sharePresentationButton"]';
 exports.mediaAreaButton = 'button[data-test="mediaAreaButton"]';
 exports.mediaAreaItem = 'div[id="media-area-dropdown-menu"] ul li';
 exports.optionsButton = 'button[data-test="optionsButton"]';
@@ -321,7 +326,7 @@ exports.presentationPPTX = 'BBB.pptx';
 exports.presentationTXT = 'helloWorld.txt';
 exports.startScreenSharing = 'button[data-test="startScreenShare"]';
 exports.stopScreenSharing = 'button[data-test="stopScreenShare"]';
-exports.managePresentations = 'li[data-test="managePresentations"]';
+exports.managePresentations = 'button[data-test="managePresentations"]';
 exports.presentationFileUpload = 'div#upload-modal input[type="file"]';
 exports.presentationToolbarWrapper = 'div[id="presentationToolbarWrapper"]';
 exports.nextSlide = 'button[data-test="nextSlide"]';
@@ -330,7 +335,7 @@ exports.skipSlide = 'select[data-test="skipSlide"]';
 exports.presentationOptionsDownloadBtn = 'button[data-test="presentationOptionsDownload"]';
 exports.confirmManagePresentation = 'button[data-test="confirmManagePresentation"]';
 exports.presentationDownloadBtn = 'button[data-test="presentationDownload"]';
-exports.presentationItem = 'tr[data-test="presentationItem"]';
+exports.presentationItem = 'div[data-test="presentationItem"]';
 exports.removePresentation = 'button[data-test="removePresentation"]';
 exports.presentationPlaceholder = 'div[data-test="presentationPlaceholder"]';
 exports.presentationContainer = 'div[data-test="presentationContainer"]';

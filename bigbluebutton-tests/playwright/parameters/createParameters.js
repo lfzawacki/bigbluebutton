@@ -144,15 +144,14 @@ class CreateParameters extends MultiUsers {
 
     // checking the default location being reset when dropping into a non-available location
     await checkDefaultLocationReset(this.modPage);
-    
+
     await this.modPage.dragAndDropWebcams(e.dropAreaSidebarBottom);
     await checkScreenshots(this, 'should be on custom layout', 'video', 'custom-layout', 2);
 
     await this.modPage.dragAndDropWebcams(e.dropAreaSidebarBottom);
     await checkScreenshots(this, 'should be on custom layout', 'video', 'custom-layout', 3);
 
-    await this.modPage.waitAndClick(e.userListToggleBtn);
-    await this.modPage.wasRemoved(e.chatButton, 'should not be displayed the chat button');
+    await this.modPage.waitAndClick(e.messagesSidebarButton);
     await this.modPage.wasRemoved(e.sendButton, 'should not be displayed the send button');
     await sleep(1000);
 
@@ -164,9 +163,9 @@ class CreateParameters extends MultiUsers {
     await this.modPage.waitForSelector(e.whiteboard);
     await this.userPage.waitForSelector(e.whiteboard);
     await checkScreenshots(this, 'should the cameras be above the presentation', [e.webcamContainer, e.webcamMirroredVideoContainer], 'smart-layout', 1);
-    
-    await this.modPage.waitAndClick(e.userListToggleBtn);
-    await this.modPage.wasRemoved(e.chatButton, '');
+
+    await this.modPage.waitAndClick(e.messagesSidebarButton);
+    await this.modPage.wasRemoved(e.sendButton, 'should not be displayed the send button');
     await sleep(1000); // wait for the whiteboard zoom to stabilize
 
     await checkScreenshots(this, 'should the cameras be on the side of presentation', [e.webcamContainer, e.webcamMirroredVideoContainer], 'smart-layout', 2);
@@ -186,11 +185,11 @@ class CreateParameters extends MultiUsers {
   async videoFocus() {
     await this.modPage.waitForSelector(e.whiteboard);
 
-    await this.modPage.waitAndClick(e.joinVideo); 
+    await this.modPage.waitAndClick(e.joinVideo);
     await this.modPage.bringToFront();
     await this.modPage.hasElement(e.webcamMirroredVideoPreview, 'should display the video preview when sharing webcam ', ELEMENT_WAIT_TIME);
     await this.modPage.waitAndClick(e.startSharingWebcam);
-        
+
     await this.modPage.waitForSelector(e.webcamMirroredVideoContainer, VIDEO_LOADING_WAIT_TIME);
     await this.modPage.waitForSelector(e.leaveVideo, VIDEO_LOADING_WAIT_TIME);
 
@@ -203,7 +202,7 @@ class CreateParameters extends MultiUsers {
 
     await this.modPage.shareWebcam();
     await this.userPage.shareWebcam();
-    
+
 
     await checkScreenshots(this, 'should be the cameras only layout', [e.webcamContainer, e.webcamMirroredVideoContainer], 'cameras-only');
   }
@@ -226,9 +225,7 @@ class CreateParameters extends MultiUsers {
     await this.userPage.wasRemoved(e.joinVideo);
 
     await this.modPage.hasElement(e.chatMessages);
-    await this.modPage.hasElement(e.userListContent);
     await this.userPage.hasElement(e.chatMessages);
-    await this.userPage.hasElement(e.userListContent);
 
     await checkScreenshots(this, 'should be the participants and chat only layout', [e.webcamContainer, e.webcamMirroredVideoContainer], 'participants-and-chat-only');
   }

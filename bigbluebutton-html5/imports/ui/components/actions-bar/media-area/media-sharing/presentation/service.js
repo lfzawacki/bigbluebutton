@@ -241,7 +241,9 @@ const useExternalUploadData = () => {
 
 function handleFiledrop(files, files2, that, intl, intlMessages) {
   if (that) {
-    const { fileValidMimeTypes } = that.props;
+    const {
+      fileValidMimeTypes,
+    } = that.props;
     const { toUploadCount } = that.state;
     const validMimes = fileValidMimeTypes.map((fileValid) => fileValid.mime);
     const validExtentions = fileValidMimeTypes.map((fileValid) => fileValid.extension);
@@ -296,11 +298,19 @@ function handleFiledrop(files, files2, that, intl, intlMessages) {
       toUploadCount: (toUploadCount + presentationsToUpload.length),
       shouldDisableExportButtonForAllDocuments: true,
     }), () => {
-      // after the state is set (files have been dropped),
-      // make the first of the new presentations current
-      if (presentationsToUpload && presentationsToUpload.length) {
-        that.handleCurrentChange(presentationsToUpload[0].presentationId);
-      }
+      const PRESENTATION_CONFIG = window.meetingClientSettings.public.presentation;
+      uploadAndConvertPresentations(
+        presentationsToUpload,
+        Auth.meetingID,
+        PRESENTATION_CONFIG.uploadEndpoint,
+      )
+        .then((presentations) => {
+          // Update the presentation with their new ids
+          presentations.forEach((p, i) => {
+            if (p === undefined) return;
+            presentationsToUpload[i].onDone(p.presentationId);
+          });
+        });
     });
 
     if (rejected.length > 0) {

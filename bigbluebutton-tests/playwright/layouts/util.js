@@ -2,19 +2,19 @@ const { expect } = require('@playwright/test');
 const e = require('../core/elements');
 
 async function reopenChatSidebar(page) {
-  await page.waitAndClick(e.userListToggleBtn);
+  await page.waitAndClick(e.messagesSidebarButton);
   try {
-    await page.hasElement(e.hidePublicChat);
+    await page.hasElement(e.hideMessagesButton);
   } catch {
-    await page.waitAndClick(e.chatButton);
-    await page.hasElement(e.hidePublicChat);
+    await page.waitAndClick(e.messagesSidebarButton);
+    await page.hasElement(e.hideMessagesButton);
   }
 }
 
 async function checkScreenshots(layoutTest, description, maskedSelectors, screenshotName, screenshotNumber) {
   const getMaskedLocators = (page) => Array.isArray(maskedSelectors)
-  ? maskedSelectors.map(selector => page.getLocator(selector))
-  : [page.getLocator(maskedSelectors)];
+    ? maskedSelectors.map(selector => page.getLocator(selector))
+    : [page.getLocator(maskedSelectors)];
 
   const modPageMaskedSelectors = getMaskedLocators(layoutTest.modPage);
   await expect(layoutTest.modPage.page, description).toHaveScreenshot(`moderator-${screenshotName}${screenshotNumber ? '-' + screenshotNumber : ''}.png`, {
@@ -31,7 +31,7 @@ async function checkDefaultLocationReset(test) {
   await test.getLocator(e.webcamContainer).first().hover({ timeout: 5000 });
   await test.page.mouse.down();
   await test.getLocator(e.whiteboard).hover({ timeout: 5000 });
-  
+
   // checking all dropAreas being displayed
   await test.hasElement(e.dropAreaBottom);
   await test.hasElement(e.dropAreaLeft);

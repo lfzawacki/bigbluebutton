@@ -1407,6 +1407,13 @@ SELECT pres_presentation."meetingId",
     ) as "totalPagesUploaded",
     pres_presentation."uploadErrorMsgKey",
     pres_presentation."uploadErrorDetailsJson",
+    (
+        SELECT pp."urlsJson"->>'thumb'
+        FROM "pres_page" pp
+        WHERE pp."presentationId" = pres_presentation."presentationId"
+          AND pp.num = 1
+        LIMIT 1
+    ) as "firstPageThumbnailUrl",
     case when pres_presentation."exportToChatStatus" is not null
                 and pres_presentation."exportToChatStatus" != 'EXPORTED'
                 and pres_presentation."exportToChatHasError" is not true

@@ -76,6 +76,8 @@ export const PRESENTATIONS_SUBSCRIPTION = gql`subscription PresentationsSubscrip
     presentationId
     removable
     uploadCompleted
+    firstPageThumbnailUrl
+    createdAt
   }  
 }`;
 

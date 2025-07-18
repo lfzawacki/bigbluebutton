@@ -72,7 +72,7 @@ class Presentation extends MultiUsers {
 
     await this.modPage.hasElement(e.whiteboard, 'should display the whiteboard when the moderator joins the meeting');
     await this.modPage.waitAndClick(e.actions);
-    if(!externalVideoPlayer) {
+    if (!externalVideoPlayer) {
       await this.modPage.hasElement(e.managePresentations, 'should display the manage presentation options on the actions button');
       return this.modPage.wasRemoved(e.shareExternalVideoBtn, 'should not display the option to share an external video, since is deactivated');
     }
@@ -347,7 +347,6 @@ class Presentation extends MultiUsers {
     await this.modPage.hasElementCount(e.presentationItem, 2, 'should display both default and uploaded presentation on the manage presentations modal');
     await this.modPage.waitAndClick(e.removePresentation);  // remove first presentation
     await this.modPage.waitAndClick(e.removePresentation);  // remove second presentation
-    await this.modPage.waitAndClick(e.confirmManagePresentation);
 
     await this.modPage.wasRemoved(e.whiteboard, 'should not display the whiteboard for the moderator');
     await this.modPage.wasRemoved(e.minimizePresentation, 'should not display the minimize presentation button for the moderator');
@@ -355,10 +354,8 @@ class Presentation extends MultiUsers {
     await this.userPage.wasRemoved(e.minimizePresentation, 'should not display the minimize presentation button for the attendee');
 
     // Check removed presentations inside the Manage Presentations
-    await this.modPage.waitAndClick(e.mediaAreaButton);
-    await this.modPage.waitAndClick(e.managePresentations);
-    await this.modPage.wasRemoved(e.presentationsList, 'should not display the presentation list for the moderator');
-    await this.modPage.waitAndClick(e.confirmManagePresentation);
+    await this.modPage.wasRemoved(e.presentationItem, 'should not display the presentation list for the moderator');
+    await this.modPage.press('Escape'); // close the media sharing menu
 
     // Making viewer a presenter
     await this.modPage.waitAndClick(e.usersListSidebarButton);
@@ -387,12 +384,9 @@ class Presentation extends MultiUsers {
     await this.userPage.waitAndClick(e.managePresentations);
     await this.userPage.waitAndClick(e.removePresentation);
     await this.userPage.waitAndClick(e.removePresentation);
-    await this.userPage.waitAndClick(e.confirmManagePresentation);
 
     await this.userPage.wasRemoved(e.whiteboard, 'should not display the whiteboard for the attendee');
-    await this.userPage.waitAndClick(e.mediaAreaButton);
-    await this.userPage.waitAndClick(e.managePresentations);
-    await this.userPage.wasRemoved(e.presentationsList, 'should not display the presentation list for the attendee');
+    await this.userPage.wasRemoved(e.presentationItem, 'should not display the presentation list for the attendee');
   }
 
   async presentationFullscreen() {

@@ -1,5 +1,5 @@
 import Auth from '/imports/ui/services/auth';
-import PresentationUploaderService from '/imports/ui/components/presentation/presentation-uploader/service';
+import PresentationUploaderService from '/imports/ui/components/actions-bar/media-area/media-sharing/presentation/service';
 import { uniqueId } from '/imports/utils/string-utils';
 import PadsService from '/imports/ui/components/pads/pads-graphql/service';
 

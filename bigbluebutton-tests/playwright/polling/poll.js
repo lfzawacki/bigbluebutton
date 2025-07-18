@@ -113,7 +113,7 @@ class Polling extends MultiUsers {
     for (const removeBtn of reversedRemovePresentationButtons) {
       await removeBtn.click({ timeout: ELEMENT_WAIT_TIME });
     }
-    await this.modPage.waitAndClick(e.confirmManagePresentation);
+    await this.modPage.press('Escape'); // close the media sharing menu
     await util.startPoll(this.modPage);
     await this.userPage.hasElement(e.pollingContainer, 'should display the polling container for the attendee after the poll is created');
     await this.userPage.waitAndClick(e.pollAnswerOptionBtn);
@@ -234,7 +234,7 @@ class Polling extends MultiUsers {
 
   async pollResultsOnChat() {
     const { pollChatMessage } = getSettings();
-    
+
     await this.modPage.waitForSelector(e.whiteboard, ELEMENT_WAIT_LONGER_TIME);
     await util.startPoll(this.modPage);
     await this.modPage.hasElementDisabled(e.publishPollingLabel, 'should display the publish polling button disabled without any answer sent from the user');
@@ -262,7 +262,7 @@ class Polling extends MultiUsers {
     await this.userPage.waitAndClick(e.pollAnswerOptionBtn);
     await this.modPage.hasElement(e.publishPollingLabel, 'should display the publish poll button enabled after the attendee answered the poll');
     await this.modPage.waitAndClick(e.publishPollingLabel);
-    await expect(wbDrawnRectangleLocator,'should display a rectangle shape with the poll result on the whiteboard').toHaveCount(initialWbDrawnRectangleCount + 1);
+    await expect(wbDrawnRectangleLocator, 'should display a rectangle shape with the poll result on the whiteboard').toHaveCount(initialWbDrawnRectangleCount + 1);
   }
 
   async pollResultsInDifferentPresentation() {

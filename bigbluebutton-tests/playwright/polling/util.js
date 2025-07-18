@@ -1,4 +1,5 @@
 const { test } = require('@playwright/test');
+const { uploadSinglePresentation } = require('../presentation/util');
 const e = require('../core/elements.js');
 const { getSettings } = require('../core/settings.js');
 const path = require('path');
@@ -21,12 +22,7 @@ async function startPoll(test, isAnonymous = false) {
 }
 
 async function uploadSPresentationForTestingPolls(test, fileName) {
-  await test.waitAndClick(e.mediaAreaButton);
-  await test.waitAndClick(e.managePresentations);
-  await test.hasElement(e.presentationFileUpload, 'should display the presentation file upload on the manage presentations modal');
-  await test.page.setInputFiles(e.presentationFileUpload, path.join(__dirname, `../core/media/${fileName}`));
-  await test.hasText('body', e.statingUploadPresentationToast, 'should display the presentation toast about the upload');
-  await test.waitAndClick(e.confirmManagePresentation);
+  await uploadSinglePresentation(test, fileName);
 }
 
 exports.openPoll = openPoll;

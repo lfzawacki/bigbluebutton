@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Icon from '/imports/ui/components/common/icon/component';
-import Styled from '/imports/ui/components/presentation/presentation-uploader/styles';
+import Styled from './styles';
 import { toast } from 'react-toastify';
 import { defineMessages } from 'react-intl';
 import { usePreviousValue } from '/imports/ui/hooks/usePreviousValue';
@@ -255,9 +255,6 @@ function renderToastItem(item, intl) {
   return (
     <Styled.UploadRow
       key={item.presentationId || item.temporaryPresentationId}
-      onClick={() => {
-        if (hasError || isProcessing) Session.setItem('showUploadPresentationView', true);
-      }}
     >
       <Styled.FileLine>
         <span>
@@ -364,7 +361,7 @@ function renderExportationStatus(item, intl) {
 function renderToastExportItem(item, intl) {
   const { exportToChatStatus: status } = item;
   const loading = [EXPORT_STATUSES.RUNNING, EXPORT_STATUSES.COLLECTING,
-    EXPORT_STATUSES.PROCESSING].includes(status);
+  EXPORT_STATUSES.PROCESSING].includes(status);
   const done = status === EXPORT_STATUSES.EXPORTED;
   const statusIconMap = {
     [EXPORT_STATUSES.RUNNING]: 'blank',
@@ -501,16 +498,16 @@ export const PresentationUploaderToast = ({
       } else {
         toast(
           renderExportToast(exportingPres, intl, exportToastIdRef.current), {
-            hideProgressBar: true,
-            autoClose: false,
-            newestOnTop: true,
-            closeOnClick: true,
-            toastId: exportToastIdRef.current,
-            onClose: () => {
-              Session.setItem('presentationUploaderExportToastId', null);
-              getIdsFromPresentationsAndDismiss(exportingPres);
-            },
+          hideProgressBar: true,
+          autoClose: false,
+          newestOnTop: true,
+          closeOnClick: true,
+          toastId: exportToastIdRef.current,
+          onClose: () => {
+            Session.setItem('presentationUploaderExportToastId', null);
+            getIdsFromPresentationsAndDismiss(exportingPres);
           },
+        },
         );
       }
     }
@@ -564,7 +561,7 @@ export const PresentationUploaderToast = ({
       handleDismissToast(convertingToastIdRef.current);
     }, TIMEOUT_CLOSE_TOAST * 1000);
   } else if (presentationsToBeShowed.length > 0) {
-  // } else {
+    // } else {
     toast.update(convertingToastIdRef.current, {
       render: renderToastList(presentationsToBeShowed, intl),
     });
