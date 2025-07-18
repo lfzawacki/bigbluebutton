@@ -13,6 +13,8 @@ if [ ! -d ./node_modules ] ; then
 	npm install
 fi
 
+sudo cp -r ./public/locales /usr/share/bigbluebutton/html5-client/locales
+
 sudo ln -sf /usr/share/bigbluebutton/nginx/bbb-html5.nginx.dev /usr/share/bigbluebutton/nginx/bbb-html5.nginx
 sudo systemctl restart nginx
 

@@ -196,7 +196,7 @@ public:
     userSettingsStorage: session
     defaultSettings:
       layout:
-        selectedLayout: 'custom'
+        selectedLayout: 'presentationFocus'
         pushLayout: false
       application:
         animations: true
