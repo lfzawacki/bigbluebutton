@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { findDOMNode } from 'react-dom';
 import TetherComponent from 'react-tether';
 import { defineMessages, injectIntl } from 'react-intl';
 import deviceInfo from '/imports/utils/deviceInfo';
@@ -167,8 +166,8 @@ class Dropdown extends Component {
   handleWindowClick(event) {
     const { keepOpen, onHide } = this.props;
     const { isOpen } = this.state;
-    const triggerElement = findDOMNode(this.trigger);
-    const contentElement = findDOMNode(this.content);
+    const triggerElement = this.trigger;
+    const contentElement = this.content;
     if (!(triggerElement && contentElement)) return;
     if (triggerElement && triggerElement.contains(event.target)) {
       if (keepOpen) {

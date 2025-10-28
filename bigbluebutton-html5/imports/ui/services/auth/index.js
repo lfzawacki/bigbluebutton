@@ -182,14 +182,14 @@ class Auth {
 
   logout() {
     if (!this.loggedIn) {
-      if (allowRedirectToLogoutURL()) {
+      if (this.allowRedirectToLogoutURL()) {
         return Promise.resolve(this._logoutURL);
       }
       return Promise.resolve();
     }
 
     return new Promise((resolve) => {
-      if (allowRedirectToLogoutURL()) {
+      if (this.allowRedirectToLogoutURL()) {
         resolve(this._logoutURL);
       }
 

@@ -1,7 +1,6 @@
 import React, {
   useState, useRef, useContext, useEffect,
 } from 'react';
-import { findDOMNode } from 'react-dom';
 import { defineMessages, injectIntl } from 'react-intl';
 import PropTypes from 'prop-types';
 import Styled from './styles';
@@ -166,7 +165,7 @@ const VirtualBgSelector = ({
 
       if (!shouldEnableBackgroundUpload(isCustomVirtualBackgroundsEnabled)) {
         // eslint-disable-next-line react/no-find-dom-node
-        findDOMNode(inputElementsRef.current[index]).focus();
+        inputElementsRef.current[index].current.focus();
       } else {
         if (customParams) {
           dispatch({
@@ -186,7 +185,7 @@ const VirtualBgSelector = ({
           });
         }
         // eslint-disable-next-line react/no-find-dom-node
-        findDOMNode(inputElementsRef.current[0]).focus();
+        inputElementsRef.current[0].current.focus();
       }
 
       return null;
