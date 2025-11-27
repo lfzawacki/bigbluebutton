@@ -9,6 +9,7 @@ import BBBMenu from '/imports/ui/components/common/menu/component';
 import Styled from './styles';
 import { uniqueId } from '/imports/utils/string-utils';
 import makeDropdownPluginItem from './service';
+import withRenderInstrumentation from '/imports/ui/components/common/with-render-instrumentation/component';
 
 const intlMessages = defineMessages({
   more: {
@@ -133,4 +134,4 @@ const UserItemToolbar: React.FC<UserItemToolbarProps> = ({
   );
 };
 
-export default UserItemToolbar;
+export default withRenderInstrumentation(UserItemToolbar, 'UserItemToolbar');

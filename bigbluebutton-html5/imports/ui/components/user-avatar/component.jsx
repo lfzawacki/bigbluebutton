@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { getSettingsSingletonInstance } from '/imports/ui/services/settings';
 import Styled from './styles';
 import browserInfo from '/imports/utils/browserInfo';
+import withRenderInstrumentation from '/imports/ui/components/common/with-render-instrumentation/component';
 
 const propTypes = {
   children: PropTypes.node,
@@ -78,4 +79,4 @@ const UserAvatar = ({
 
 UserAvatar.propTypes = propTypes;
 
-export default UserAvatar;
+export default withRenderInstrumentation(UserAvatar, 'UserAvatar');

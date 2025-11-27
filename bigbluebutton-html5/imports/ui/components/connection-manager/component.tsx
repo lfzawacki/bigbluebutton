@@ -13,6 +13,7 @@ import connectionStatus from '../../core/graphql/singletons/connectionStatus';
 import deviceInfo from '/imports/utils/deviceInfo';
 import BBBWeb from '/imports/api/bbb-web-api';
 import useMeetingSettings from '/imports/ui/core/local-states/useMeetingSettings';
+import telemetryLink from '/imports/ui/services/telemetryLink';
 
 interface ConnectionManagerProps {
   children: React.ReactNode;
@@ -327,7 +328,7 @@ const ConnectionManager: React.FC<ConnectionManagerProps> = ({ children }): Reac
         const graphWsLink = new GraphQLWsLink(
           subscription,
         );
-        wsLink = ApolloLink.from([payloadSizeCheckLink, errorLink, graphWsLink]);
+        wsLink = ApolloLink.from([payloadSizeCheckLink, telemetryLink, errorLink, graphWsLink]);
         wsLink.setOnError((error) => {
           loadingContextInfo.setLoading(false);
           throw new Error('Error: on apollo connection'.concat(JSON.stringify(error) || ''));

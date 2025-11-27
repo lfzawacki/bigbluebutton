@@ -1196,6 +1196,27 @@ public:
       - home.jpg
       - coffeeshop.jpg
       - board.jpg
+  otel:
+    # Configure and enable/disable instrumentation via opentelemetry
+    serviceName: 'bbb-html5-client'
+    traceUrl: OTEL_TRACE_URL
+    metricsUrl: OTEL_METRICS_URL
+    # Whether to trace react components lifecycle
+    # enabled=false (no component is traced except those in includeComponents)
+    # enabled=true (all components are traced except those in excludeComponents)
+    react:
+      enabled: false
+      excludeComponents: []
+      includeComponents: []
+    graphql:
+      enabled: false
+      excludeMessages: []
+      includeMessages: []
+    metrics: false
+    documentLoad: false
+    # Value to be sent with every message (by default we send host, meetingId and userId)
+    customAttributes:
+      # - myCustomAttr: 'customValue'
 private:
   analytics:
     includeChat: true

@@ -37,6 +37,7 @@ import {
 } from '/imports/ui/core/graphql/mutations/userMutations';
 import UserNameWithSubs from './user-name-with-subs/component';
 import { PluginsContext } from '/imports/ui/components/components-data/plugin-context/context';
+import withRenderInstrumentation from '/imports/ui/components/common/with-render-instrumentation/component';
 
 const renderUserListItemIconsFromPlugin = (
   userItemsFromPlugin: PluginSdk.UserListItemAdditionalInformationInterface[],
@@ -220,4 +221,4 @@ const UserListItem: React.FC<UserListItemProps> = ({
   );
 };
 
-export default React.memo(UserListItem);
+export default React.memo(withRenderInstrumentation(UserListItem, 'UserListItem'));

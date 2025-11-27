@@ -10,6 +10,7 @@ import { SET_POLICY } from './waiting-users/mutations';
 import { notify } from '/imports/ui/services/notification';
 import GuestUsersManagementPanel from './waiting-users/guest-policy/component';
 import WaitingUserSection from './waiting-users/component';
+import withRenderInstrumentation from '/imports/ui/components/common/with-render-instrumentation/component';
 
 const ASK_MODERATOR = 'ASK_MODERATOR';
 const ALWAYS_ACCEPT = 'ALWAYS_ACCEPT';
@@ -132,4 +133,4 @@ const GuestManagement: React.FC<GuestManagementProps> = () => {
   ) : null;
 };
 
-export default GuestManagement;
+export default withRenderInstrumentation(GuestManagement, 'GuestManagement');

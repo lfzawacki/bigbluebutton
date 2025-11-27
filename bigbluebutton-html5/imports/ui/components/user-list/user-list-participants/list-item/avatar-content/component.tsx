@@ -4,6 +4,7 @@ import Icon from '/imports/ui/components/common/icon/icon-ts/component';
 import { AvatarContentProps, EmojiProps } from './types';
 import { convertRemToPixels } from '/imports/utils/dom-utils';
 import { useIsReactionsEnabled } from '/imports/ui/services/features';
+import withRenderInstrumentation from '/imports/ui/components/common/with-render-instrumentation/component';
 
 const Emoji: React.FC<EmojiProps> = ({ emoji, native, size }) => (
   <em-emoji emoji={emoji} native={native} size={size} />
@@ -71,4 +72,4 @@ const AvatarContent: React.FC<AvatarContentProps> = ({ user }) => {
   );
 };
 
-export default AvatarContent;
+export default withRenderInstrumentation(AvatarContent, 'AvatarContent');

@@ -14,6 +14,8 @@ import UserListParticipantsPageContainer from './page/component';
 import IntersectionWatcher from './intersection-watcher/intersectionWatcher';
 import { setLocalUserList } from '/imports/ui/core/hooks/useLoadedUserList';
 import roveBuilder from '/imports/ui/core/utils/keyboardRove';
+import { USERS_PER_USER_LIST_PAGE } from '/imports/ui/components/user-list/user-list-participants/constants';
+import withRenderInstrumentation from '/imports/ui/components/common/with-render-instrumentation/component';
 
 interface UserListParticipantsProps {
   count: number;
@@ -148,4 +150,4 @@ const UserListParticipantsContainer: React.FC<UserListParticipantsContainerProps
   );
 };
 
-export default UserListParticipantsContainer;
+export default withRenderInstrumentation(UserListParticipantsContainer, 'UserListParticipants');

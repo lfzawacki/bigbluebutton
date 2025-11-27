@@ -9,6 +9,8 @@ import BBBWeb from '/imports/api/bbb-web-api';
 import MeetingStaticDataStore from '/imports/ui/core/singletons/meetingStaticData';
 import { MeetingStaticData } from '/imports/ui/Types/meetingStaticData';
 
+import { setupOTelSDK } from "/telemetry.js";
+
 const connectionTimeout = 60000;
 
 type Meeting = MeetingStaticData & {
@@ -79,6 +81,9 @@ const SettingsLoader: React.FC<SettingsLoaderProps> = (props) => {
             } = data?.meeting[0];
             const settings = clientSettings.clientSettingsJson;
             window.meetingClientSettings = JSON.parse(JSON.stringify(settings));
+
+            setupOTelSDK();
+
             MeetingStaticDataStore.setMeetingData(staticData);
             setMeetingSettings(settings);
             setLoading(false);

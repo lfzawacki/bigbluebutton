@@ -1,6 +1,7 @@
 import React from 'react';
 import { defineMessages, injectIntl, useIntl } from 'react-intl';
 import ModalSimple from '/imports/ui/components/common/modal/simple/component';
+import withRenderInstrumentation from '/imports/ui/components/common/with-render-instrumentation/component';
 
 const intlMessages = defineMessages({
   title: {
@@ -80,4 +81,4 @@ const AboutComponent = (props) => {
   );
 };
 
-export default injectIntl(AboutComponent);
+export default injectIntl(withRenderInstrumentation(AboutComponent, 'AboutComponent'));

@@ -16,6 +16,7 @@ import { PluginsContext } from '/imports/ui/components/components-data/plugin-co
 import useMeeting from '/imports/ui/core/hooks/useMeeting';
 import { LockSettings, Meeting, UsersPolicies } from '/imports/ui/Types/meeting';
 import logger from '/imports/startup/client/logger';
+import withRenderInstrumentation from '/imports/ui/components/common/with-render-instrumentation/component';
 
 interface UserListParticipantsContainerProps {
   index: number;
@@ -223,4 +224,4 @@ const UserListParticipantsPageContainer: React.FC<UserListParticipantsContainerP
   );
 };
 
-export default UserListParticipantsPageContainer;
+export default withRenderInstrumentation(UserListParticipantsPageContainer, 'UserListParticipantsPage');

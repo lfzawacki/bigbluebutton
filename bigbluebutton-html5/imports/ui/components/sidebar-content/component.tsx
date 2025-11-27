@@ -23,6 +23,7 @@ import {
 } from '/imports/ui/components/layout/defaultValues';
 import AudioCaptionsPanel from '../audio-captions/panel/component';
 import NotesRenderMode from '/imports/ui/components/notes/constants';
+import withRenderInstrumentation from '/imports/ui/components/common/with-render-instrumentation/component';
 
 const SidebarContent = (props: SidebarContentProps) => {
   const {
@@ -194,4 +195,4 @@ const SidebarContent = (props: SidebarContentProps) => {
   );
 };
 
-export default SidebarContent;
+export default withRenderInstrumentation(SidebarContent, 'SidebarContent');

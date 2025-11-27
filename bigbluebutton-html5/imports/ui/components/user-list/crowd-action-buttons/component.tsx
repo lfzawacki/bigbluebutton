@@ -6,6 +6,7 @@ import { SET_MUTED } from './mutations';
 import { CrowdActionButtonsProps } from './types';
 import Styled from './styles';
 import LockViewersContainer from '../../lock-viewers/container';
+import withRenderInstrumentation from '/imports/ui/components/common/with-render-instrumentation/component';
 
 const intlMessages = defineMessages({
   muteAllExceptPresenterLabel: {
@@ -97,4 +98,4 @@ const CrowdActionButtons: React.FC<CrowdActionButtonsProps> = () => {
   );
 };
 
-export default CrowdActionButtons;
+export default withRenderInstrumentation(CrowdActionButtons, 'CrowdActionButtons');

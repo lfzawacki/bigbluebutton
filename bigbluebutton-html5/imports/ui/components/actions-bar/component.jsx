@@ -17,6 +17,7 @@ import Selector from '/imports/ui/components/common/selector/component';
 import ToggleGroup from '/imports/ui/components/common/toggle-group/component';
 import Separator from '/imports/ui/components/common/separator/component';
 import AudioCaptionsPanelAppObserver from '../audio-captions/panel/observer/component';
+import withRenderInstrumentation from '/imports/ui/components/common/with-render-instrumentation/component';
 
 const intlMessages = defineMessages({
   actionsBarLabel: {
@@ -271,4 +272,4 @@ class ActionsBar extends PureComponent {
   }
 }
 
-export default ActionsBar;
+export default withRenderInstrumentation(ActionsBar, 'ActionsBar');

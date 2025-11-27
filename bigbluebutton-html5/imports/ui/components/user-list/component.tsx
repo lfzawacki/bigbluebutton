@@ -18,6 +18,7 @@ import { onSaveUserNames } from './service';
 import useMeeting from '/imports/ui/core/hooks/useMeeting';
 import { GET_USER_NAMES } from '/imports/ui/core/graphql/queries/users';
 import logger from '/imports/startup/client/logger';
+import withRenderInstrumentation from '/imports/ui/components/common/with-render-instrumentation/component';
 
 const intlMessages = defineMessages({
   usersTitle: {
@@ -154,4 +155,4 @@ const UserList: React.FC<UserListComponentProps> = () => {
   );
 };
 
-export default UserList;
+export default withRenderInstrumentation(UserList, 'UserList');

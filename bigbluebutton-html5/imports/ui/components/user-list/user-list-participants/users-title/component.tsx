@@ -1,6 +1,7 @@
 import React from 'react';
 import { defineMessages, useIntl } from 'react-intl';
 import Styled from './styles';
+import withRenderInstrumentation from '/imports/ui/components/common/with-render-instrumentation/component';
 
 interface UsersTitleProps {
   count: number;
@@ -25,4 +26,4 @@ const UsersTitle: React.FC<UsersTitleProps> = ({ count }) => {
   );
 };
 
-export default UsersTitle;
+export default withRenderInstrumentation(UsersTitle, 'UsersTitle');

@@ -8,6 +8,7 @@ import { isMe } from '../service';
 import Styled from './styles';
 import { UserNameWithSubsProps } from './types';
 import { uniqueId } from '/imports/utils/string-utils';
+import withRenderInstrumentation from '/imports/ui/components/common/with-render-instrumentation/component';
 
 const intlMessages = defineMessages({
   bot: {
@@ -157,4 +158,4 @@ const UserNameWithSubs: React.FC<UserNameWithSubsProps> = ({
   );
 };
 
-export default UserNameWithSubs;
+export default withRenderInstrumentation(UserNameWithSubs, 'UserNameWithSubs');
