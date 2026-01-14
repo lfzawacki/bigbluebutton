@@ -137,7 +137,6 @@ const ExternalVideoPlayer: React.FC<ExternalVideoPlayerProps> = ({
     Vimeo: true,
     Facebook: true,
     ArcPlayer: true,
-    // YouTube: true,
   }), []);
 
   const videoPlayConfig = useMemo(() => {
@@ -170,7 +169,7 @@ const ExternalVideoPlayer: React.FC<ExternalVideoPlayerProps> = ({
           autohide: 1,
           rel: 0,
           ecver: 2,
-          controls: isBot ? 0 : 1,
+          controls: isPresenter ? 1 : 0,
           cc_lang_pref: document.getElementsByTagName('html')[0].lang.substring(0, 2),
         },
         embedOptions: {
