@@ -57,29 +57,30 @@ trait UpdateTranscriptPubMsgHdlr {
         msg.body.locale
       )
 
-      editTranscript(
-        msg.header.userId,
-        start,
-        end,
-        msg.body.locale,
-        text
-      )
-
-      val transcript = AudioCaptions.parseTranscript(msg.body.transcript)
-
       for {
-        u <- Users2x.findWithIntId(liveMeeting.users2x, msg.header.userId)
+       // only propagate transcript for messages with a valid userId
+       u <- Users2x.findWithIntId(liveMeeting.users2x, msg.header.userId)
       } yield {
-        CaptionDAO.insertOrUpdateCaption(msg.body.transcriptId, meetingId, msg.header.userId, transcript, msg.body.locale)
-      }
+        editTranscript(
+          msg.header.userId,
+          start,
+          end,
+          msg.body.locale,
+          text
+        )
 
-      broadcastEvent(
-        msg.header.userId,
-        msg.body.transcriptId,
-        transcript,
-        msg.body.locale,
-        msg.body.result,
-      )
+        val transcript = AudioCaptions.parseTranscript(msg.body.transcript)
+
+        CaptionDAO.insertOrUpdateCaption(msg.body.transcriptId, meetingId, msg.header.userId, transcript, msg.body.locale)
+
+        broadcastEvent(
+          msg.header.userId,
+          msg.body.transcriptId,
+          transcript,
+          msg.body.locale,
+          msg.body.result,
+        )
+      }
     }
   }
 }
