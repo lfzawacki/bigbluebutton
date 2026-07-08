@@ -13,7 +13,8 @@ val compileSettings = Seq(
     "-Ywarn-dead-code",
     "-language:_",
     "-release:17",
-    "-encoding", "UTF-8"
+    "-encoding", "UTF-8",
+    "-Ybackend-parallelism", "4"
   ),
   javacOptions ++= List(
     "-Xlint:unchecked",
@@ -23,22 +24,22 @@ val compileSettings = Seq(
 
 resolvers += Resolver.sonatypeRepo("releases")
 
-// We want to have our jar files in lib_managed dir.
-// This way we'll have the right path when we import
-// into eclipse.
-retrieveManaged := true
-
 testOptions in Test += Tests.Argument(TestFrameworks.Specs2, "html", "console", "junitxml")
 testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-h", "target/scalatest-reports")
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.8" % "test"
+
+// Deserializer.scala/JsonUtil.scala use scala.reflect.runtime.universe (TypeTag/Manifest),
+// which lives in scala-reflect, not scala-library. Pin it to the project's actual
+// scalaVersion instead of hardcoding a version that can drift out of sync.
+libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value
 
 Seq(Revolver.settings: _*)
 lazy val commonMessage = (project in file(".")).settings(name := "bbb-common-message", libraryDependencies ++= Dependencies.runtime).settings(compileSettings)
 
 // See https://github.com/scala-ide/scalariform
 // Config file is in ./.scalariform.conf
-scalariformAutoformat := true
+scalariformAutoformat := false
 
 //-----------
 // Packaging
@@ -101,3 +102,10 @@ pomExtra := (
 licenses := Seq("LGPL-3.0" -> url("http://opensource.org/licenses/LGPL-3.0"))
 
 homepage := Some(url("https://www.bigbluebutton.org"))
+
+// http://www.scala-sbt.org/release/docs/Artifacts.html
+// disable publishing the main API jar
+publishArtifact in (Compile, packageDoc) := false
+
+// disable publishing the main sources jar
+publishArtifact in (Compile, packageSrc) := false
