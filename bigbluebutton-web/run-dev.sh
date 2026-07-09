@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR" || exit 1
+
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 echo "  **** This is for development only *****"
 echo " "
-echo " Make sure you change permissions to /var/bigbluebutton/"
-echo " to allow bbb-web to write to the directory. "
+echo " bbb-web needs write access to /var/bigbluebutton/."
+echo " Grant it to your user without touching the other permissions:"
 echo " "
-echo " chmod -R 777 /var/bigbluebutton/"
+echo " sudo setfacl -R -m \"u:\$(whoami):rwX\" -m \"d:u:\$(whoami):rwX\" /var/bigbluebutton/"
 echo " "
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
@@ -15,10 +18,8 @@ for var in "$@"
 do
     if [[ $var == --build ]] ; then
        echo "Performing a full re-build..."
-       cd ~/src/bbb-common-web
-       ./deploy.sh
-       cd ~/src/bigbluebutton-web/
-       ./build.sh;
+       "$SCRIPT_DIR/../bbb-common-web/deploy.sh"
+       "$SCRIPT_DIR/build.sh"
     fi
 done
 
