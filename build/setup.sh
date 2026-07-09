@@ -74,18 +74,25 @@ while [[ $retry_count -lt $max_retries ]]; do
 done
 
 
-# -v "$CACHE_DIR/dev":/root/dev
+# Optional persistent build-tool dependency cache. When BUILD_CACHE_DIR is
+# set (CI does this; also useful for repeated local package builds), the
+# sbt/coursier/ivy/maven/gradle caches inside the container are backed by
+# host directories, so dependency resolution is warm across builds instead
+# of starting from an empty cache in every fresh container.
+CACHE_MOUNTS=()
+if [ -n "$BUILD_CACHE_DIR" ]; then
+    for cache_dir in .cache/coursier .ivy2 .sbt .m2 .gradle; do
+        mkdir -p "$BUILD_CACHE_DIR/$cache_dir"
+        CACHE_MOUNTS+=(--mount "type=bind,src=$BUILD_CACHE_DIR/$cache_dir,dst=/root/$cache_dir")
+    done
+fi
+
 sudo docker run --rm --detach --cidfile $DOCKER_CONTAINER_ID_FILE \
         --env GIT_REV=$GIT_REV --env COMMIT_DATE=$COMMIT_DATE --env LOCAL_BUILD=$LOCAL_BUILD \
         --mount type=bind,src="$PWD",dst=/mnt \
         --mount type=bind,src="${PWD}/artifacts,dst=/artifacts" \
+        "${CACHE_MOUNTS[@]}" \
         -t "$DOCKER_IMAGE" /mnt/build/setup-inside-docker.sh "$PACKAGE_TO_BUILD"
-
-#        -v "$CACHE_DIR/$DISTRO/.gradle:/root/.gradle" \
-#        -v "$CACHE_DIR/$DISTRO/.grails:/root/.grails" \
-#        -v "$CACHE_DIR/$DISTRO/.ivy2:/root/.ivy2" \
-#        -v "$CACHE_DIR/$DISTRO/.m2:/root/.m2" \
-#        -v "$TMP/$TARGET:$TMP/$TARGET"  \
 
 sudo docker attach --no-stdin $(sudo cat $DOCKER_CONTAINER_ID_FILE)
 sudo rm $DOCKER_CONTAINER_ID_FILE

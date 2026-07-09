@@ -22,6 +22,7 @@ record-and-playback/.loadpath
 *~
 cache/*
 artifacts/*
+.build-cache/
 bbb-presentation-video.zip
 bbb-presentation-video
 bbb-graphql-actions-adapter-server/
