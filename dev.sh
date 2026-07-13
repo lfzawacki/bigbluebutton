@@ -39,24 +39,58 @@ list_services() {
 }
 
 html5_mode() {
-    local link
-    link=$(readlink /usr/share/bigbluebutton/nginx/bbb-html5.nginx 2>/dev/null || true)
-    case $link in
-        *dev*)    echo "dev (webpack dev server, port 4100)" ;;
+    local link target port
+    link=/usr/share/bigbluebutton/nginx/bbb-html5.nginx
+    target=$(readlink -f "$link" 2>/dev/null || true)
+    case $target in
+        *dev*)
+            port=$(grep -oP 'proxy_pass\s+http://localhost:\K[0-9]+' "$target" 2>/dev/null | head -1)
+            echo "dev (webpack dev server, port ${port:-unknown})"
+            ;;
         *static*) echo "static (deployed build in /usr/share/bigbluebutton/html5-client)" ;;
-        *)        echo "unknown ($link)" ;;
+        *)        echo "unknown ($target)" ;;
     esac
+}
+
+# Shared libs that are only ever deployed (no run-dev.sh, no independent
+# process), so systemd/dev-process status is meaningless noise for them.
+STATUS_HIDDEN="common-message common-web"
+
+# Recognize the interpreter/build-tool a service's run-dev.sh execs into
+# (sbt, gradlew, npm/node, go run, webpack) running with its cwd set to the
+# service's own directory - that combination is specific enough to tell a
+# real dev run apart from an unrelated process that happens to sit in the
+# same tree (e.g. an editor).
+DEV_PROC_PATTERN='sbt-launch|gradlew|npm|node|go run|webpack'
+
+is_dev_running() {
+    local abs="$REPO_ROOT/$1" pid cwd cmd
+    for pid in /proc/[0-9]*; do
+        pid=${pid#/proc/}
+        cwd=$(readlink -f "/proc/$pid/cwd" 2>/dev/null) || continue
+        [ "$cwd" = "$abs" ] || continue
+        cmd=$(tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null)
+        if [[ $cmd =~ $DEV_PROC_PATTERN ]]; then
+            return 0
+        fi
+    done
+    return 1
 }
 
 cmd_status() {
     echo "Services:"
     echo "$SERVICES" | while IFS='|' read -r name dir unit; do
         [ -z "$name" ] && continue
-        if [ "$unit" = "-" ]; then
-            printf "  %-20s %s\n" "$name" "(no systemd unit)"
+        [[ " $STATUS_HIDDEN " == *" $name "* ]] && continue
+        local state=""
+        if is_dev_running "$dir"; then
+            state="running (dev)"
+        elif [ "$unit" != "-" ]; then
+            state=$(systemctl is-active "$unit" 2>/dev/null || true)
         else
-            printf "  %-20s %s\n" "$name" "$(systemctl is-active "$unit" 2>/dev/null || true)"
+            state="(no systemd unit)"
         fi
+        printf "  %-20s %s\n" "$name" "$state"
     done
     echo ""
     echo "html5 serving mode: $(html5_mode)"
