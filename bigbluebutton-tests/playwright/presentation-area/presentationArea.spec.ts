@@ -11,6 +11,17 @@ import {
 
 const needsPlugin = (...contents: MediaAreaContent[]) => contents.includes('pluginContent');
 
+// With the LiveKit bridge, camera as content keeps running when a screenshare or an external
+// video starts over it. Stopping the new content then stops the camera instead. These fail before
+// #26150 too. With the bbb-webrtc-sfu bridge, the external video case passes and the screenshare
+// one is flaky.
+const KNOWN_ISSUES: [MediaAreaContent, MediaAreaContent][] = [
+  ['screenshare', 'cameraAsContent'],
+  ['externalVideo', 'cameraAsContent'],
+];
+const isKnownIssue = (next: MediaAreaContent, previous: MediaAreaContent) =>
+  KNOWN_ISSUES.some(([n, p]) => n === next && p === previous);
+
 // Every kind of content that takes over the presentation area must behave the same way: the last
 // one shared wins and stops the previous one, and stopping it brings the whiteboard back
 test.describe.parallel('Presentation area content', { tag: ['@ci', '@media'] }, () => {
@@ -31,24 +42,25 @@ test.describe.parallel('Presentation area content', { tag: ['@ci', '@media'] }, 
   test.describe('Sharing replaces the current content', () => {
     MEDIA_AREA_CONTENTS.forEach((next) => {
       CORE_CONTENTS.filter((previous) => previous !== next).forEach((previous) => {
-        test(`Sharing the ${CONTENT_LABELS[next]} stops the ${CONTENT_LABELS[previous]}`, async ({
-          browser,
-          page,
-          context,
-          request,
-        }, testInfo) => {
-          const presentationArea = await init(
-            {
-              browser,
-              page,
-              context,
-              request,
-            },
-            testInfo,
-            needsPlugin(next),
-          );
-          await presentationArea.replaces(next, previous);
-        });
+        test(
+          `Sharing the ${CONTENT_LABELS[next]} stops the ${CONTENT_LABELS[previous]}`,
+          {
+            tag: isKnownIssue(next, previous) ? '@known-issue' : [],
+          },
+          async ({ browser, page, context, request }, testInfo) => {
+            const presentationArea = await init(
+              {
+                browser,
+                page,
+                context,
+                request,
+              },
+              testInfo,
+              needsPlugin(next),
+            );
+            await presentationArea.replaces(next, previous);
+          },
+        );
       });
     });
   });
@@ -173,9 +185,49 @@ test.describe.parallel('Presentation area content', { tag: ['@ci', '@media'] }, 
       );
       await presentationArea.presenterReloadKeepsCoreContent('externalVideo');
     });
+
+    test('The presenter rejoining in a new tab keeps the pinned shared notes over the plugin content', async ({
+      browser,
+      page,
+      context,
+      request,
+    }, testInfo) => {
+      const presentationArea = await init(
+        {
+          browser,
+          page,
+          context,
+          request,
+        },
+        testInfo,
+        true,
+      );
+      await presentationArea.presenterRejoinKeepsCoreContent('pinnedNotes');
+    });
+
+    (['pinnedNotes', 'externalVideo'] as const).forEach((core) => {
+      test(`A viewer joining later sees the ${CONTENT_LABELS[core]} over the plugin content`, async ({
+        browser,
+        page,
+        context,
+        request,
+      }, testInfo) => {
+        const presentationArea = await init(
+          {
+            browser,
+            page,
+            context,
+            request,
+          },
+          testInfo,
+          true,
+        );
+        await presentationArea.lateViewerSeesCoreContent(core);
+      });
+    });
   });
 
-  test('Opening the camera as content view without sharing keeps the screenshare', async ({
+  test('Re-rendering the plugin content shown on top keeps it on screen', async ({
     browser,
     page,
     context,
@@ -189,10 +241,30 @@ test.describe.parallel('Presentation area content', { tag: ['@ci', '@media'] }, 
         request,
       },
       testInfo,
-      false,
+      true,
     );
-    await presentationArea.cameraPickerCancelKeepsScreenshare();
+    await presentationArea.pluginRerenderOnTopShowsNewContent();
   });
+
+  // Fails before #26150 too: opening the camera as content view stops the screenshare, even when
+  // the presenter backs out without sharing
+  test(
+    'Opening the camera as content view without sharing keeps the screenshare',
+    { tag: '@known-issue' },
+    async ({ browser, page, context, request }, testInfo) => {
+      const presentationArea = await init(
+        {
+          browser,
+          page,
+          context,
+          request,
+        },
+        testInfo,
+        false,
+      );
+      await presentationArea.cameraPickerCancelKeepsScreenshare();
+    },
+  );
 
   test('Viewers follow every replacement of the presentation area content', async ({
     browser,
