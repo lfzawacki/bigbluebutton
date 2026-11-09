@@ -1727,7 +1727,19 @@ const reducer = (state, action) => {
     case ACTIONS.SET_PILE_CONTENT_FOR_PRESENTATION_AREA: {
       const { presentationAreaContentActions } = state;
       if (action.value.open) {
-        presentationAreaContentActions.push(action);
+        const { replacesGenericContentId, ...value } = action.value;
+        const replacedIndex = replacesGenericContentId
+          ? presentationAreaContentActions.findIndex((p) => (
+            p.value.content === PRESENTATION_AREA.GENERIC_CONTENT
+            && p.value.open
+            && p.value.genericContentId === replacesGenericContentId
+          ))
+          : -1;
+        if (replacedIndex !== -1) {
+          presentationAreaContentActions.splice(replacedIndex, 1, { ...action, value });
+        } else {
+          presentationAreaContentActions.push({ ...action, value });
+        }
       } else {
         let indexesOfOpenedContent = presentationAreaContentActions.reduce((indexes, p, index) => {
           if (action.value.content === PRESENTATION_AREA.GENERIC_CONTENT) {
