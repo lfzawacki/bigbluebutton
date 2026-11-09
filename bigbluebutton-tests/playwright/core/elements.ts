@@ -474,6 +474,7 @@ export const elements = {
   // the media-sharing view's confirm button (was startNewVideo before the
   // external video share moved into the media area)
   startShareVideoBtn: 'button[data-test="ShareExternalVideo"]',
+  mediaAreaStopSharing: 'button[data-test="StopSharing"]',
   videoPlayer: 'div[data-test="videoPlayer"]',
   presentationTitle: 'h1[data-test="presentationTitle"]',
   fitToWidthButton: 'button[data-test="fitToWidthButton"]',
