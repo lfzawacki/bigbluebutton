@@ -1752,6 +1752,19 @@ const reducer = (state, action) => {
               },
             };
           }
+        } else if (value.content === PRESENTATION_AREA.GENERIC_CONTENT) {
+          // Plugin content goes under the core content on top (screenshare, external video,
+          // pinned notes) and shows once that content stops. For a new share, the presenter's
+          // client stops it. Content restored after a reload, or seen by a late joiner, must
+          // not cover what everyone else sees.
+          let index = presentationAreaContentActions.length;
+          while (index > 0 && ![
+            PRESENTATION_AREA.GENERIC_CONTENT,
+            PRESENTATION_AREA.WHITEBOARD_OPEN,
+          ].includes(presentationAreaContentActions[index - 1].value.content)) {
+            index -= 1;
+          }
+          presentationAreaContentActions.splice(index, 0, { ...action, value });
         } else {
           presentationAreaContentActions.push({ ...action, value });
         }
