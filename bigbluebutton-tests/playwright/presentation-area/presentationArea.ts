@@ -8,6 +8,7 @@ import { startScreenshare } from '../screenshare/util';
 import { MultiUsers } from '../user/multiusers';
 
 export const PLUGIN_CONTENT_ID = 'e2ePluginMainContent';
+const PLUGIN_CONTENT_TEXT = 'e2e plugin main content';
 
 // Everything that can take over the presentation area, besides the whiteboard
 export const MEDIA_AREA_CONTENTS = [
@@ -34,8 +35,19 @@ type PluginApiWindow = Window & {
 
 type BroadcastKind = 'screen' | 'camera' | null;
 
+// The element that must be on top of the presentation area when each content is shown
+const ON_TOP_SELECTORS: Record<MediaAreaContent, string> = {
+  screenshare: e.screenShareVideo,
+  cameraAsContent: e.screenShareVideo,
+  externalVideo: e.youtubeFrame,
+  pinnedNotes: e.pinnedNotesHeader,
+  pluginContent: e.e2ePluginMainContent,
+};
+
 export class PresentationArea extends MultiUsers {
   pluginName?: string;
+
+  pluginEntrypoint?: URL;
 
   // Loads the manifest at PLUGIN_STUB_MANIFEST_URL with its script replaced by an empty one, so
   // the test drives the plugin API itself. bbb-web rejects loopback/private manifest URLs, hence
@@ -44,17 +56,22 @@ export class PresentationArea extends MultiUsers {
     const manifestUrl = parameters.pluginStubManifestUrl;
     test.skip(!manifestUrl, 'PLUGIN_STUB_MANIFEST_URL is not set');
     const manifest = await (await request.get(manifestUrl!)).json();
-    const entrypoint = new URL(manifest.javascriptEntrypointUrl, manifestUrl);
-    // akka appends ?version=<manifest version> to the entrypoint, so match without the query
+    this.pluginEntrypoint = new URL(manifest.javascriptEntrypointUrl, manifestUrl);
+    this.pluginName = manifest.name;
+    await this.routePluginStub(context);
+    return `pluginManifests=${encodeURIComponent(JSON.stringify([{ url: manifestUrl }]))}`;
+  }
+
+  // akka appends ?version=<manifest version> to the entrypoint, so match without the query
+  async routePluginStub(context: BrowserContext) {
+    const entrypoint = this.pluginEntrypoint!;
     await context.route(
       (url) => url.origin === entrypoint.origin && url.pathname === entrypoint.pathname,
       (route) => route.fulfill({ contentType: 'text/javascript', body: '' }),
     );
-    this.pluginName = manifest.name;
-    return `pluginManifests=${encodeURIComponent(JSON.stringify([{ url: manifestUrl }]))}`;
   }
 
-  async setPluginMainContent(ids: string[], testPage: Page = this.modPage) {
+  async setPluginMainContent(ids: string[], testPage: Page = this.modPage, text = PLUGIN_CONTENT_TEXT) {
     // the setter is a no-op stub until the plugin's extensible areas mount: retry until it takes
     await testPage.page.waitForFunction(
       ({ pluginName, itemIds, dataTest, text }) => {
@@ -79,10 +96,33 @@ export class PresentationArea extends MultiUsers {
         pluginName: this.pluginName,
         itemIds: ids,
         dataTest: PLUGIN_CONTENT_ID,
-        text: 'e2e plugin main content',
+        text,
       },
       { timeout: ELEMENT_WAIT_LONGER_TIME },
     );
+  }
+
+  // Visible is not enough: another content can be laid over it. The element at the centre of
+  // the content must belong to it, and not to a plugin's main-area container.
+  async isOnTop(content: MediaAreaContent, testPage: Page = this.modPage): Promise<boolean> {
+    return testPage.page.evaluate((selector) => {
+      const element = document.querySelector<HTMLElement>(selector);
+      if (!element || element.offsetParent === null) return false;
+      const box = element.getBoundingClientRect();
+      const hit = document.elementFromPoint(box.left + box.width / 2, box.top + Math.min(box.height / 2, 40));
+      if (!hit) return false;
+      if (element.contains(hit)) return true;
+      return !!element.parentElement?.contains(hit) && !hit.closest('[data-test^="container-"]');
+    }, ON_TOP_SELECTORS[content]);
+  }
+
+  async assertOnTop(content: MediaAreaContent, testPage: Page = this.modPage, who = 'the presenter') {
+    await expect
+      .poll(() => this.isOnTop(content, testPage), {
+        message: `${who} should see the ${CONTENT_LABELS[content]} on top`,
+        timeout: ELEMENT_WAIT_LONGER_TIME,
+      })
+      .toBe(true);
   }
 
   // Screenshare and camera as content share the same video element: tell them apart by the
@@ -200,6 +240,7 @@ export class PresentationArea extends MultiUsers {
       default:
         throw new Error(`Unknown content ${content}`);
     }
+    await this.assertOnTop(content);
   }
 
   async assertGone(content: MediaAreaContent, why: string) {
@@ -301,6 +342,59 @@ export class PresentationArea extends MultiUsers {
     await this.assertShown(core);
     await this.stop(core);
     await this.assertShown('pluginContent');
+  }
+
+  // A plugin that re-renders the content it shows hands the client a new id for it. The content
+  // must stay on screen, not leave an empty area.
+  async pluginRerenderOnTopShowsNewContent() {
+    await this.waitForWhiteboard();
+    await this.setPluginMainContent(['plugin-render-1'], this.modPage, 'first render');
+    await this.assertShown('pluginContent');
+    await this.setPluginMainContent(['plugin-render-2'], this.modPage, 'second render');
+    await expect(
+      this.modPage.page.locator(e.e2ePluginMainContent),
+      'should display the re-rendered plugin content',
+    ).toHaveText('second render', { timeout: ELEMENT_WAIT_LONGER_TIME });
+    await this.assertOnTop('pluginContent');
+  }
+
+  // A viewer on their own browser, where the plugin renders the shared content too
+  async joinViewerWithPluginContent() {
+    const viewerContext = await this.browser.newContext();
+    await this.routePluginStub(viewerContext);
+    await this.initUserPage(viewerContext);
+    await this.setPluginMainContent([PLUGIN_CONTENT_ID], this.userPage);
+  }
+
+  // A viewer joining later gets the plugin content after the core content shared over it: what
+  // they see must match the rest of the meeting
+  async lateViewerSeesCoreContent(core: MediaAreaContent) {
+    await this.waitForWhiteboard();
+    await this.start('pluginContent');
+    await this.start(core);
+    await this.joinViewerWithPluginContent();
+    await this.userPage.page.waitForTimeout(ELEMENT_WAIT_LONGER_TIME / 2);
+    await this.assertOnTop(core, this.userPage, 'the viewer');
+    await this.assertShown(core);
+  }
+
+  // The presenter comes back in a new tab of the same browser and the plugin restores its content.
+  // That is not a new share, so the core content stays for everyone.
+  async presenterRejoinKeepsCoreContent(core: MediaAreaContent) {
+    await this.waitForWhiteboard();
+    await this.start('pluginContent');
+    await this.start(core);
+    await this.joinViewerWithPluginContent();
+    const { meetingId, context: presenterContext, testInfo } = this.modPage;
+    await this.modPage.page.close();
+    const rejoined = new Page(this.browser, await presenterContext!.newPage(), testInfo);
+    await rejoined.init(true, { meetingId, fullName: 'Moderator', testInfo });
+    await rejoined.waitForSelector(e.startScreenSharing, ELEMENT_WAIT_EXTRA_LONG_TIME);
+    this.modPage = rejoined;
+    await this.setPluginMainContent([PLUGIN_CONTENT_ID]);
+    await this.modPage.page.waitForTimeout(ELEMENT_WAIT_LONGER_TIME / 2);
+    await this.assertOnTop(core, this.userPage, 'the viewer');
+    await this.assertShown(core);
   }
 
   // Opening the camera-as-content view is not sharing yet: backing out keeps the screenshare

@@ -18,7 +18,7 @@ import GenericMainContent from './component';
 import { ACTIONS, PRESENTATION_AREA } from '/imports/ui/components/layout/enums';
 import useCurrentUser from '/imports/ui/core/hooks/useCurrentUser';
 import useEjectPresentationAreaContent from '/imports/ui/core/hooks/useEjectPresentationAreaContent';
-import Storage from '/imports/ui/services/storage/session';
+import Storage from '/imports/ui/services/storage/local';
 import Auth from '/imports/ui/services/auth';
 import { GenericContentMainAreaContainerProps } from '../types';
 
@@ -80,8 +80,9 @@ const GenericContentMainAreaContainer: React.FC<GenericContentMainAreaContainerP
     });
 
     // Only more items than before is new content, which ejects core content
-    // like core features do among themselves. The count survives a reload, so
-    // the content a plugin restores afterwards is not shared again.
+    // like core features do among themselves. The count is kept per meeting in
+    // this browser, so the content a plugin restores after a reload or a rejoin
+    // is not shared again.
     const countKey = `${MAIN_AREA_COUNT_KEY}-${Auth.meetingID}`;
     const previousCount = Number(Storage.getItem(countKey)) || 0;
     Storage.setItem(countKey, mainAreaIds.length);

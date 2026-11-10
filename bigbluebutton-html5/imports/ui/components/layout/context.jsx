@@ -1737,6 +1737,34 @@ const reducer = (state, action) => {
           : -1;
         if (replacedIndex !== -1) {
           presentationAreaContentActions.splice(replacedIndex, 1, { ...action, value });
+          // The pile keeps its shape, so nothing re-derives the area: point it at the new item
+          const { genericMainContent } = state.input;
+          if (genericMainContent.genericContentId === replacesGenericContentId) {
+            return {
+              ...state,
+              presentationAreaContentActions,
+              input: {
+                ...state.input,
+                genericMainContent: {
+                  ...genericMainContent,
+                  genericContentId: value.genericContentId,
+                },
+              },
+            };
+          }
+        } else if (value.content === PRESENTATION_AREA.GENERIC_CONTENT) {
+          // Plugin content goes under the core content on top (screenshare, external video,
+          // pinned notes) and shows once that content stops. For a new share, the presenter's
+          // client stops it. Content restored after a reload, or seen by a late joiner, must
+          // not cover what everyone else sees.
+          let index = presentationAreaContentActions.length;
+          while (index > 0 && ![
+            PRESENTATION_AREA.GENERIC_CONTENT,
+            PRESENTATION_AREA.WHITEBOARD_OPEN,
+          ].includes(presentationAreaContentActions[index - 1].value.content)) {
+            index -= 1;
+          }
+          presentationAreaContentActions.splice(index, 0, { ...action, value });
         } else {
           presentationAreaContentActions.push({ ...action, value });
         }
@@ -1967,10 +1995,12 @@ const LayoutContextProvider = (props) => {
   const previousLayoutType = usePrevious(layoutType);
 
   useEffect(() => {
-    if (
-      layoutContextState.presentationAreaContentActions.length
-      !== previousPresentationAreaContentActions.current.length
-    ) {
+    const pile = layoutContextState.presentationAreaContentActions;
+    const previousPile = previousPresentationAreaContentActions.current;
+    const topContent = (p) => p[p.length - 1]?.value.content;
+    // One content can replace another in a single update (e.g. an external
+    // video unpinning the notes), which keeps the pile's length
+    if (pile.length !== previousPile.length || topContent(pile) !== topContent(previousPile)) {
       updatePresentationAreaContent(
         layoutContextState,
         previousLayoutType,
